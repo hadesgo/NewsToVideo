@@ -21,7 +21,7 @@ export const getTodatNews = async () => {
     model: 'qwen-max',
     messages: [
       { role: 'system', content: '你是一名时事评论员' },
-      { role: 'user', content: `请总结今天的全球热点新闻，按照序号排列` },
+      { role: 'user', content: `请总结今天的全球热点新闻，按照序号排列，标题：内容的格式` },
     ],
     enable_search: true, // 开启联网搜索的参数
     search_options: {

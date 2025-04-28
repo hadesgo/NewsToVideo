@@ -25,7 +25,7 @@ export const tts = async (text: string, outputPath: string) => {
   const params = {
     Text: text,
     SessionId: crypto.randomUUID(),
-    VoiceType: 101012,
+    VoiceType: 101022,
     EnableSubtitle: true,
     Codec: 'mp3',
   }
