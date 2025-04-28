@@ -1,16 +1,5 @@
 import Editly from 'editly'
-import { Subtitle } from 'tencentcloud-sdk-nodejs-tts/tencentcloud/services/tts/v20190823/tts_models.js'
-
-interface NewsVideoConfig {
-  news: { title: string, content: string, index: number }[]
-  audios: { path: string, duration: number, subtitles: Subtitle[], index: number }[]
-  images: { path: string, index: number }[]
-  layout: {
-    width: number
-    height: number
-    fps: number
-  }
-}
+import { NewsVideoConfig } from 'src/type.ts'
 
 export const genVideo = async (config: NewsVideoConfig, outPath: string) => {
   const clips = []

@@ -36,6 +36,6 @@ export const tts = async (text: string, outputPath: string) => {
   }
   return {
     audio: outputPath,
-    subtitle: res.Subtitles,
+    subtitles: res.Subtitles,
   }
 }
