@@ -1,48 +1,23 @@
 import fs from 'fs'
-import { execa } from 'execa'
 
 import { NewsVideoConfig } from './type.ts'
 import { getTodatNews } from './lib/news.ts'
 import { tts } from './lib/voice.ts'
 import { genImage } from './lib/image.ts'
 import { genVideo } from './lib/video.ts'
+import { getVideoDurationInSeconds } from './utils/ffmpeg.ts'
 
-/**
- *
- * @param {string} input
- * @returns
- */
-const getFFprobeWrappedExecution = async (input: string) => {
-  const params = ['-v', 'error', '-show_format', '-show_streams']
-
-  if (typeof input === 'string') {
-    return await execa('ffprobe', [...params, input])
-  }
-
-  throw new Error('Given input was neither a string')
-}
-
-/**
- *
- * @param {string} input
- * @returns {number}
- */
-export const getVideoDurationInSeconds = async (input: string): Promise<number> => {
-  const { stdout } = await getFFprobeWrappedExecution(input)
-  const matched = stdout.match(/duration="?(\d*\.\d*)"?/)
-  if (matched && matched[1]) return parseFloat(matched[1])
-  throw new Error('No duration found!')
-}
-
-function formatTime(date: Date): string {
+function formatTime(date: Date): string[] {
   const year = date.getFullYear()
   const month = (date.getMonth() + 1).toString().padStart(2, '0')
   const day = date.getDate().toString().padStart(2, '0')
-  return `${year}-${month}-${day}`
+  return [`${year}-${month}-${day}`, `${year}年${month}月${day}日`]
 }
 
 const main = async () => {
-  const today = formatTime(new Date())
+  const formatTodays = formatTime(new Date())
+  const today = formatTodays[0]
+  const videoName = '每日全球热点新闻资讯-${formatTodays[1]}`'
   fs.mkdirSync(`./out/${today}`, { recursive: true })
   fs.mkdirSync(`./out/${today}/audios`, { recursive: true })
   fs.mkdirSync(`./out/${today}/images`, { recursive: true })
@@ -65,6 +40,7 @@ const main = async () => {
     videoConfig.news.push({
       title: news.title,
       content: news.content,
+      comments: news.comments,
       index: index,
     })
     if (isCache) {
@@ -79,7 +55,7 @@ const main = async () => {
         })
       }
       else {
-        const audioInfo = await tts(news.content, `./out/${today}/audios/${index}.mp3`)
+        const audioInfo = await tts(`${news.content}\n${news.comments}`, `./out/${today}/audios/${index}.mp3`)
         const subtitleFilePath = `./out/${today}/audios/${index}.json`
         if (audioInfo.subtitles) {
           fs.writeFileSync(subtitleFilePath, JSON.stringify(audioInfo.subtitles))
@@ -101,7 +77,7 @@ const main = async () => {
       })
     }
     else {
-      const audioInfo = await tts(news.content, `./out/${today}/audios/${index}.mp3`)
+      const audioInfo = await tts(`${news.content}\n${news.comments}`, `./out/${today}/audios/${index}.mp3`)
       const subtitleFilePath = `./out/${today}/audios/${index}.json`
       if (audioInfo.subtitles) {
         fs.writeFileSync(subtitleFilePath, JSON.stringify(audioInfo.subtitles))
@@ -120,7 +96,7 @@ const main = async () => {
     }
   }
 
-  await genVideo(videoConfig, `./out/${today}/news.mp4`)
+  await genVideo(videoConfig, `./out/${today}/${videoName}.mp4`)
 }
 
 main()

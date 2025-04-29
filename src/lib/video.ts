@@ -25,7 +25,7 @@ export const genVideo = async (config: NewsVideoConfig, outPath: string) => {
         },
         {
           type: 'subtitle',
-          text: news.content,
+          text: `{news.content}\n${news.comments}`,
           backgroundColor: 'rgba(0,0,0,0.5)',
           fontFamily: '微软雅黑',
         },
