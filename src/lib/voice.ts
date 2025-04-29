@@ -31,8 +31,19 @@ export const tts = async (text: string, outputPath: string) => {
   }
   const res = await client.TextToVoice(params)
   if (res.Audio) {
-    const binaryData = Buffer.from(res.Audio, 'base64')
-    fs.writeFileSync(outputPath, binaryData)
+    const sampleRate = 16000
+    const bitDepth = 16
+    const channels = 1
+    const silenceDurationMs = 300
+    // 计算 300ms 静音的字节数
+    const bytesPerSample = bitDepth / 8
+    const samplesInSilence = Math.round((silenceDurationMs / 1000) * sampleRate)
+    const silenceByteCount = samplesInSilence * bytesPerSample * channels
+    // 创建静音缓冲区
+    const silenceBuffer = Buffer.alloc(silenceByteCount)
+    const audioBuffer = Buffer.from(res.Audio, 'base64')
+    const newAudioBuffer = Buffer.concat([silenceBuffer, audioBuffer, silenceBuffer])
+    fs.writeFileSync(outputPath, newAudioBuffer)
   }
   return {
     audio: outputPath,
