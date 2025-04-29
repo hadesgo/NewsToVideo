@@ -4,8 +4,18 @@ import { initTxtbox } from 'src/utils/initTxtbox.ts'
 
 initTxtbox()
 
-export const genVideo = async (config: NewsVideoConfig, outPath: string) => {
+const genVideo = async (config: NewsVideoConfig, outPath: string) => {
   const clips = []
+  clips.push({
+    duration: 5,
+    layers: [
+      {
+        type: 'video',
+        path: './assets/Opening.mp4',
+        resizeMode: 'contain',
+      },
+    ],
+  })
   for (let index = 0; index < config.audios.length; index++) {
     const audio = config.audios[index]
     const image = config.images[index]
@@ -25,7 +35,7 @@ export const genVideo = async (config: NewsVideoConfig, outPath: string) => {
         },
         {
           type: 'subtitle',
-          text: `{news.content}\n${news.comments}`,
+          text: `${news.content}\n${news.comments}\n${news.keywodrs.join(' ')}`,
           backgroundColor: 'rgba(0,0,0,0.5)',
           fontFamily: '微软雅黑',
         },
@@ -37,6 +47,20 @@ export const genVideo = async (config: NewsVideoConfig, outPath: string) => {
     }
     clips.push(clip)
   }
+  clips.push({
+    duration: 3,
+    layers: [
+      {
+        type: 'image',
+        path: './assets/logo.png',
+        resizeMode: 'contain',
+      },
+      {
+        type: 'audio',
+        path: './assets/Ending.wav',
+      },
+    ],
+  })
   await Editly({
     outPath,
     width: config.layout.width,
@@ -46,3 +70,5 @@ export const genVideo = async (config: NewsVideoConfig, outPath: string) => {
     clips: clips,
   })
 }
+
+export default genVideo

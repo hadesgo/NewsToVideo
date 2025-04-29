@@ -1,10 +1,10 @@
 import fs from 'fs'
 
 import { NewsVideoConfig } from './type.ts'
-import { getTodatNews } from './lib/news.ts'
-import { tts } from './lib/voice.ts'
-import { genImage } from './lib/image.ts'
-import { genVideo } from './lib/video.ts'
+import getTodatNews from './lib/news.ts'
+import tts from './lib/voice.ts'
+import genImage from './lib/image.ts'
+import genVideo from './lib/video.ts'
 import { getVideoDurationInSeconds } from './utils/ffmpeg.ts'
 
 function formatTime(date: Date): string[] {
@@ -17,7 +17,7 @@ function formatTime(date: Date): string[] {
 const main = async () => {
   const formatTodays = formatTime(new Date())
   const today = formatTodays[0]
-  const videoName = '每日全球热点新闻资讯-${formatTodays[1]}`'
+  const videoName = `每日全球热点新闻资讯-${formatTodays[1]}`
   fs.mkdirSync(`./out/${today}`, { recursive: true })
   fs.mkdirSync(`./out/${today}/audios`, { recursive: true })
   fs.mkdirSync(`./out/${today}/images`, { recursive: true })
@@ -34,13 +34,14 @@ const main = async () => {
     newsList = await getTodatNews()
     fs.writeFileSync(newsJsonFilePath, JSON.stringify(newsList))
   }
-
+  console.log(`获取到 ${newsList.length} 条新闻`)
   for (let index = 0; index < newsList.length; index++) {
     const news = newsList[index]
     videoConfig.news.push({
       title: news.title,
       content: news.content,
       comments: news.comments,
+      keywodrs: news.keywords,
       index: index,
     })
     if (isCache) {
@@ -67,14 +68,16 @@ const main = async () => {
           duration: await getVideoDurationInSeconds(audioInfo.audio),
         })
       }
+      console.log(`音频 ${index} 生成完成, 进度: ${index + 1}/${newsList.length}`)
       const imagePath = `./out/${today}/images/${index}.png`
       if (!fs.existsSync(imagePath)) {
-        await genImage(news.title, `${videoConfig.layout.width}x${videoConfig.layout.height}`, imagePath)
+        await genImage(news.keywords[0], `${videoConfig.layout.width}x${videoConfig.layout.height}`, imagePath)
       }
       videoConfig.images.push({
         path: imagePath,
         index: index,
       })
+      console.log(`图片 ${index} 生成完成, 进度: ${index + 1}/${newsList.length}`)
     }
     else {
       const audioInfo = await tts(`${news.content}\n${news.comments}`, `./out/${today}/audios/${index}.mp3`)
@@ -88,11 +91,13 @@ const main = async () => {
         index: index,
         duration: await getVideoDurationInSeconds(audioInfo.audio),
       })
-      const imagePath = await genImage(news.title, `${videoConfig.layout.width}x${videoConfig.layout.height}`, `./out/${today}/images/${index}.png`)
+      console.log(`音频 ${index} 生成完成, 进度: ${index + 1}/${newsList.length}`)
+      const imagePath = await genImage(news.keywords[0], `${videoConfig.layout.width}x${videoConfig.layout.height}`, `./out/${today}/images/${index}.png`)
       videoConfig.images.push({
-        path: imagePath,
+        path: imagePath || '',
         index: index,
       })
+      console.log(`图片 ${index} 生成完成, 进度: ${index + 1}/${newsList.length}`)
     }
   }
 

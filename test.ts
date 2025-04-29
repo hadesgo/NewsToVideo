@@ -1,32 +1,40 @@
+import { addSilence } from './src/utils/ffmpeg.ts'
+import getTodatNews from './src/lib/news.ts'
 import Editly from 'editly'
-
-import { initTxtbox } from './src/utils/initTxtbox'
-
-initTxtbox()
+import path from 'path'
 
 const main = async () => {
+  const clips = []
+  clips.push({
+    duration: 5,
+    layers: [
+      {
+        type: 'video',
+        path: './assets/Opening.mp4',
+      },
+    ],
+  })
+  clips.push({
+    duration: 3,
+    layers: [
+      {
+        type: 'image',
+        path: './assets/logo.png',
+        resizeMode: 'contain',
+      },
+      {
+        type: 'audio',
+        path: './assets/Ending.wav',
+      },
+    ],
+  })
   await Editly({
     outPath: './test.mp4',
     width: 1920,
     height: 1080,
     fps: 30,
     keepSourceAudio: true,
-    clips: [{
-      duration: 5,
-      layers: [
-        {
-          type: 'news-title',
-          text: '加拿大温哥华音乐节发生汽车冲撞人群事件',
-          fontFamily: '微软雅黑',
-        },
-        {
-          type: 'subtitle',
-          text: '在温哥华举行的音乐节上，一辆汽车冲入人群，造成9人死亡。警方逮捕了一名30岁的本地男性司机，并排除了恐怖袭击的可能性。',
-          backgroundColor: 'rgba(0,0,0,0.5)',
-          fontFamily: '微软雅黑',
-        },
-      ],
-    }],
+    clips: clips,
   })
 }
 
