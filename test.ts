@@ -1,5 +1,9 @@
 import Editly from 'editly'
 
+import { initTxtbox } from './src/utils/initTxtbox'
+
+initTxtbox()
+
 const main = async () => {
   await Editly({
     outPath: './test.mp4',

@@ -2,10 +2,10 @@ import fs from 'fs'
 import { execa } from 'execa'
 
 import { NewsVideoConfig } from './type.ts'
-import { getTodatNews } from './utils/news.ts'
-import { tts } from './utils/voice.ts'
-import { genImage } from './utils/image.ts'
-import { genVideo } from './utils/video.ts'
+import { getTodatNews } from './lib/news.ts'
+import { tts } from './lib/voice.ts'
+import { genImage } from './lib/image.ts'
+import { genVideo } from './lib/video.ts'
 
 /**
  *

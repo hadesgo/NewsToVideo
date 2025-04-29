@@ -1,5 +1,8 @@
 import Editly from 'editly'
 import { NewsVideoConfig } from 'src/type.ts'
+import { initTxtbox } from 'src/utils/initTxtbox.ts'
+
+initTxtbox()
 
 export const genVideo = async (config: NewsVideoConfig, outPath: string) => {
   const clips = []
@@ -18,11 +21,13 @@ export const genVideo = async (config: NewsVideoConfig, outPath: string) => {
         {
           type: 'news-title',
           text: news.title,
+          fontFamily: '微软雅黑',
         },
         {
           type: 'subtitle',
           text: news.content,
           backgroundColor: 'rgba(0,0,0,0.5)',
+          fontFamily: '微软雅黑',
         },
         {
           type: 'audio',
