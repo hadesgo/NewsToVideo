@@ -5,13 +5,31 @@ import { initTxtbox } from 'src/utils/initTxtbox.ts'
 initTxtbox()
 
 const genVideo = async (config: NewsVideoConfig, outPath: string) => {
+  let width = 0
+  let height = 0
+  switch (config.layout) {
+    case 'landscape':
+    {
+      width = 1920
+      height = 1080
+      break
+    }
+    case 'portrait':
+    {
+      width = 1080
+      height = 1920
+      break
+    }
+    default:
+      break
+  }
   const clips = []
   clips.push({
     duration: 5,
     layers: [
       {
         type: 'video',
-        path: './assets/Opening.mp4',
+        path: `./assets/Opening-${config.layout}.mp4`,
         resizeMode: 'contain',
       },
     ],
@@ -61,11 +79,12 @@ const genVideo = async (config: NewsVideoConfig, outPath: string) => {
       },
     ],
   })
+
   await Editly({
     outPath,
-    width: config.layout.width,
-    height: config.layout.height,
-    fps: config.layout.fps,
+    width: width,
+    height: height,
+    fps: 30,
     keepSourceAudio: true,
     clips: clips,
   })

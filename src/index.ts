@@ -1,11 +1,14 @@
 import fs from 'fs'
+import path from 'path'
 
-import { NewsVideoConfig } from './type.ts'
+import { NewsVideoConfig, LayoutType } from './type.ts'
 import getTodatNews from './lib/news.ts'
 import tts from './lib/voice.ts'
 import genImage from './lib/image.ts'
 import genVideo from './lib/video.ts'
 import { getVideoDurationInSeconds } from './utils/ffmpeg.ts'
+
+const videoLayouts = ['landscape', 'portrait']
 
 function formatTime(date: Date): string[] {
   const year = date.getFullYear()
@@ -18,90 +21,96 @@ const main = async () => {
   const formatTodays = formatTime(new Date())
   const today = formatTodays[0]
   const videoName = `每日全球热点新闻资讯-${formatTodays[1]}`
-  fs.mkdirSync(`./out/${today}`, { recursive: true })
-  fs.mkdirSync(`./out/${today}/audios`, { recursive: true })
-  fs.mkdirSync(`./out/${today}/images`, { recursive: true })
 
-  const videoConfig: NewsVideoConfig = { news: [], audios: [], images: [], layout: { width: 1920, height: 1080, fps: 30 } }
+  const todayDir = `./out/${today}`
+  fs.mkdirSync(todayDir, { recursive: true })
+
+  const aduioDir = `./out/${today}/audios`
+  fs.mkdirSync(aduioDir, { recursive: true })
+
   const newsJsonFilePath = `./out/${today}/news.json`
-  let isCache = false
   let newsList = []
   if (fs.existsSync(newsJsonFilePath)) {
     newsList = JSON.parse(fs.readFileSync(newsJsonFilePath, 'utf-8'))
-    isCache = true
   }
   else {
     newsList = await getTodatNews()
     fs.writeFileSync(newsJsonFilePath, JSON.stringify(newsList))
   }
   console.log(`获取到 ${newsList.length} 条新闻`)
-  for (let index = 0; index < newsList.length; index++) {
-    const news = newsList[index]
-    videoConfig.news.push({
-      title: news.title,
-      content: news.content,
-      comments: news.comments,
-      keywodrs: news.keywords,
-      index: index,
-    })
-    if (isCache) {
-      const audioPath = `./out/${today}/audios/${index}.mp3`
-      const subtitleFilePath = `./out/${today}/audios/${index}.json`
+
+  for (let i = 0; i < videoLayouts.length; i++) {
+    const layout = videoLayouts[i]
+    let width = 0
+    let height = 0
+    switch (layout) {
+      case 'landscape':
+      {
+        width = 1920
+        height = 1080
+        break
+      }
+      case 'portrait':
+      {
+        width = 1080
+        height = 1920
+        break
+      }
+      default:
+        break
+    }
+    const videoConfig: NewsVideoConfig = { news: [], audios: [], images: [], layout: layout as LayoutType }
+
+    const imageDir = `./out/${today}/${layout}/images`
+    fs.mkdirSync(imageDir, { recursive: true })
+
+    for (let j = 0; j < newsList.length; j++) {
+      // 生成视频配置
+      const news = newsList[j]
+      videoConfig.news.push({
+        title: news.title,
+        content: news.content,
+        comments: news.comments,
+        keywodrs: news.keywords,
+        index: j,
+      })
+      // 生成音频
+      const audioPath = path.join(aduioDir, `${j}.mp3`)
+      const subtitleFilePath = path.join(aduioDir, `${j}.json`)
       if (fs.existsSync(audioPath)) {
         videoConfig.audios.push({
-          path: `./out/${today}/audios/${index}.mp3`,
+          path: audioPath,
           subtitles: fs.existsSync(subtitleFilePath) ? JSON.parse(fs.readFileSync(subtitleFilePath, 'utf-8')) : undefined,
-          index: index,
-          duration: await getVideoDurationInSeconds(`./out/${today}/audios/${index}.mp3`),
+          index: j,
+          duration: await getVideoDurationInSeconds(audioPath),
         })
       }
       else {
-        const audioInfo = await tts(`${news.content}\n${news.comments}`, `./out/${today}/audios/${index}.mp3`)
-        const subtitleFilePath = `./out/${today}/audios/${index}.json`
+        const audioInfo = await tts(`${news.content}\n${news.comments}`, audioPath)
         if (audioInfo.subtitles) {
           fs.writeFileSync(subtitleFilePath, JSON.stringify(audioInfo.subtitles))
         }
         videoConfig.audios.push({
           path: audioInfo.audio,
           subtitles: audioInfo.subtitles,
-          index: index,
+          index: j,
           duration: await getVideoDurationInSeconds(audioInfo.audio),
         })
       }
-      console.log(`音频 ${index} 生成完成, 进度: ${index + 1}/${newsList.length}`)
-      const imagePath = `./out/${today}/images/${index}.png`
+      console.log(`音频 ${j} 生成完成, 进度: ${j + 1}/${newsList.length}`)
+      // 生成图片
+      const imagePath = path.join(imageDir, `${j}.png`)
       if (!fs.existsSync(imagePath)) {
-        await genImage(news.keywords.join(','), `${videoConfig.layout.width}x${videoConfig.layout.height}`, imagePath)
+        await genImage(news.keywords.join(','), `${width}x${height}`, imagePath)
       }
       videoConfig.images.push({
         path: imagePath,
-        index: index,
+        index: j,
       })
-      console.log(`图片 ${index} 生成完成, 进度: ${index + 1}/${newsList.length}`)
+      console.log(`图片 ${j} 生成完成, 进度: ${j + 1}/${newsList.length}`)
     }
-    else {
-      const audioInfo = await tts(`${news.content}\n${news.comments}`, `./out/${today}/audios/${index}.mp3`)
-      const subtitleFilePath = `./out/${today}/audios/${index}.json`
-      if (audioInfo.subtitles) {
-        fs.writeFileSync(subtitleFilePath, JSON.stringify(audioInfo.subtitles))
-      }
-      videoConfig.audios.push({
-        path: audioInfo.audio,
-        subtitles: audioInfo.subtitles,
-        index: index,
-        duration: await getVideoDurationInSeconds(audioInfo.audio),
-      })
-      console.log(`音频 ${index} 生成完成, 进度: ${index + 1}/${newsList.length}`)
-      const imagePath = await genImage(news.keywords.join(','), `${videoConfig.layout.width}x${videoConfig.layout.height}`, `./out/${today}/images/${index}.png`)
-      videoConfig.images.push({
-        path: imagePath || '',
-        index: index,
-      })
-      console.log(`图片 ${index} 生成完成, 进度: ${index + 1}/${newsList.length}`)
-    }
+    await genVideo(videoConfig, `./out/${today}/${layout}/${videoName}.mp4`)
   }
-
-  await genVideo(videoConfig, `./out/${today}/${videoName}.mp4`)
 }
 
 main()
