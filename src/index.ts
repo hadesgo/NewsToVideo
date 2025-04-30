@@ -71,7 +71,7 @@ const main = async () => {
       console.log(`音频 ${index} 生成完成, 进度: ${index + 1}/${newsList.length}`)
       const imagePath = `./out/${today}/images/${index}.png`
       if (!fs.existsSync(imagePath)) {
-        await genImage(news.keywords[0], `${videoConfig.layout.width}x${videoConfig.layout.height}`, imagePath)
+        await genImage(news.keywords.join(','), `${videoConfig.layout.width}x${videoConfig.layout.height}`, imagePath)
       }
       videoConfig.images.push({
         path: imagePath,
@@ -92,7 +92,7 @@ const main = async () => {
         duration: await getVideoDurationInSeconds(audioInfo.audio),
       })
       console.log(`音频 ${index} 生成完成, 进度: ${index + 1}/${newsList.length}`)
-      const imagePath = await genImage(news.keywords[0], `${videoConfig.layout.width}x${videoConfig.layout.height}`, `./out/${today}/images/${index}.png`)
+      const imagePath = await genImage(news.keywords.join(','), `${videoConfig.layout.width}x${videoConfig.layout.height}`, `./out/${today}/images/${index}.png`)
       videoConfig.images.push({
         path: imagePath || '',
         index: index,
