@@ -27,9 +27,10 @@ const tts = async (text: string, outputPath: string) => {
   const params = {
     Text: text,
     SessionId: crypto.randomUUID(),
-    VoiceType: 101022,
+    VoiceType: 301038,
     EnableSubtitle: true,
     Codec: 'mp3',
+    Speed: 0.3,
   }
   const res = await client.TextToVoice(params)
   if (res.Audio) {

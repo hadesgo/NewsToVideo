@@ -53,7 +53,7 @@ const genVideo = async (config: NewsVideoConfig, outPath: string) => {
         },
         {
           type: 'subtitle',
-          text: `${news.content}\n${news.comments}\n${news.keywodrs.join(' ')}`,
+          text: `${news.content}\n${news.comments}`,
           backgroundColor: 'rgba(0,0,0,0.5)',
           fontFamily: '微软雅黑',
         },
@@ -80,14 +80,18 @@ const genVideo = async (config: NewsVideoConfig, outPath: string) => {
     ],
   })
 
-  await Editly({
+  const editlyConfig = {
     outPath,
     width: width,
     height: height,
     fps: 30,
     keepSourceAudio: true,
     clips: clips,
-  })
+  }
+
+  console.log('editlyConfig', editlyConfig)
+
+  await Editly(editlyConfig)
 }
 
 export default genVideo
