@@ -25,7 +25,9 @@
     "editly": "^0.15.0-rc.1",
     "execa": "^9.5.2",
     "fabric": "^6.6.4",
+    "mime": "^4.0.7",
     "openai": "^4.96.0",
+    "pexels": "^1.4.0",
     "tencentcloud-sdk-nodejs-tts": "^4.1.22",
     "tsx": "^4.19.3"
   }

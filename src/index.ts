@@ -2,9 +2,9 @@ import fs from 'fs'
 import path from 'path'
 
 import { NewsVideoConfig, LayoutType } from './type.ts'
-import getTodatNews from './lib/news.ts'
-import tts from './lib/voice.ts'
-import genImage from './lib/image.ts'
+import news from './lib/news.ts'
+import tts from './lib/tts.ts'
+import genImage from './material/image.ts'
 import genVideo from './lib/video.ts'
 import { getVideoDurationInSeconds } from './utils/ffmpeg.ts'
 
@@ -34,7 +34,7 @@ const main = async () => {
     newsList = JSON.parse(fs.readFileSync(newsJsonFilePath, 'utf-8'))
   }
   else {
-    newsList = await getTodatNews()
+    newsList = await news()
     fs.writeFileSync(newsJsonFilePath, JSON.stringify(newsList))
   }
   console.log(`获取到 ${newsList.length} 条新闻`)
@@ -59,10 +59,12 @@ const main = async () => {
       default:
         break
     }
-    const videoConfig: NewsVideoConfig = { news: [], audios: [], images: [], layout: layout as LayoutType }
+    const videoConfig: NewsVideoConfig = { news: [], audios: [], images: [], videos: [], layout: layout as LayoutType }
 
     const imageDir = `./out/${today}/${layout}/images`
     fs.mkdirSync(imageDir, { recursive: true })
+    const videoDir = `./out/${today}/${layout}/videos`
+    fs.mkdirSync(videoDir, { recursive: true })
 
     for (let j = 0; j < newsList.length; j++) {
       // 生成视频配置
