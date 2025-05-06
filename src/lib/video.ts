@@ -34,17 +34,21 @@ const genVideo = async (config: NewsVideoConfig, outPath: string) => {
       },
     ],
   })
-  for (let index = 0; index < config.audios.length; index++) {
-    const audio = config.audios[index]
-    const image = config.images[index]
-    const news = config.news[index]
+  for (let index = 0; index < config.layers.length; index++) {
+    const layerConfig = config.layers[index]
+    const audio = layerConfig.audio
+    const material = layerConfig.material
+    const news = layerConfig.news
     const clip = {
-      duration: audio.duration,
+      duration: layerConfig.duration,
       layers: [
         {
-          type: 'image',
-          path: image.path,
-          resizeMode: 'cover',
+          type: material.type,
+          path: material.path,
+          resizeMode: 'contain',
+          mixVolume: 0,
+          cutFrom: 0,
+          cutTo: layerConfig.duration,
         },
         {
           type: 'news-title',

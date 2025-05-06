@@ -5,12 +5,7 @@ import Editly from 'editly'
 import path from 'path'
 
 const main = async () => {
-  // console.log(await getTodatNews())
-  const API_KEY = 'flKAf6wzHqQllPQGbRpWpPOdOyLWkM3zA8z2phmApDNcuMNKeRtM3BMV'
-  const client = createClient(API_KEY)
-  const query = 'StockMarket'
-  const videoList = await client.videos.search({ query, orientation: 'landscape' })
-  console.log(videoList)
+  tts('特朗普宣布拟对海外制作电影征收100%关税，可能冲击好莱坞海外市场，并激化美国内部矛盾。加州已就此起诉联邦政府。', './test.mp3')
 }
 
 main()

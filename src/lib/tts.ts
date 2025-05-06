@@ -31,6 +31,7 @@ const tts = async (text: string, outputPath: string) => {
     EnableSubtitle: true,
     Codec: 'mp3',
     Speed: 0.3,
+    Volume: 10,
   }
   const res = await client.TextToVoice(params)
   if (res.Audio) {

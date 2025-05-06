@@ -1,6 +1,8 @@
 import fs from 'fs'
 import axios from 'axios'
 
+import { NewsVideoConfig } from 'src/type.ts'
+
 /**
  * sleep
  *
@@ -23,4 +25,8 @@ export const downloadFile = async (url: string, filePath: string = ''): Promise<
     responseType: 'arraybuffer',
   })
   fs.writeFileSync(filePath, imageRes.data)
+}
+
+export const saveConfig = (config: NewsVideoConfig, filePath: string): void => {
+  fs.writeFileSync(filePath, JSON.stringify(config), 'utf-8')
 }
