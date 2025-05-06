@@ -53,7 +53,7 @@ const genVideo = async (config: NewsVideoConfig, outPath: string) => {
         },
         {
           type: 'subtitle',
-          text: `${news.content}\n${news.comments}`,
+          text: news.content,
           backgroundColor: 'rgba(0,0,0,0.5)',
           fontFamily: '微软雅黑',
         },

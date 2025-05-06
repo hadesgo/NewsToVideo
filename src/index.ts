@@ -70,7 +70,6 @@ const main = async () => {
       videoConfig.news.push({
         title: news.title,
         content: news.content,
-        comments: news.comments,
         keywodrs: news.keywords,
         index: j,
       })
