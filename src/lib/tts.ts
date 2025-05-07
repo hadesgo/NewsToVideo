@@ -20,6 +20,10 @@ const clientConfig = {
   },
 }
 
+// 超自然大模型音色  智小柔 502001
+// 大模型音色  智兰 501001
+// 精品音色 爱小挑 301038
+
 // 实例化要请求产品(以tts为例)的client对象
 const client = new TtsClient(clientConfig)
 
@@ -27,7 +31,7 @@ const tts = async (text: string, outputPath: string) => {
   const params = {
     Text: text,
     SessionId: crypto.randomUUID(),
-    VoiceType: 301038,
+    VoiceType: 502001,
     EnableSubtitle: true,
     Codec: 'mp3',
     Speed: 0.3,
