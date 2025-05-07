@@ -31,7 +31,7 @@ const tts = async (text: string, outputPath: string) => {
   const params = {
     Text: text,
     SessionId: crypto.randomUUID(),
-    VoiceType: 502001,
+    VoiceType: 501001,
     EnableSubtitle: true,
     Codec: 'mp3',
     Speed: 0.3,
