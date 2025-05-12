@@ -22,26 +22,29 @@ const getVideo = async (query: string, orientation: string, duration: number, vi
     default:
       break
   }
-  const res = await Client.videos.search({ query, orientation: orientation })
+  const res = await Client.videos.search({ query, orientation: orientation, locale: 'zh-CN', per_page: 80 })
   if ((res as ErrorResponse).error) {
     throw new Error((res as ErrorResponse).error)
   }
   else {
+    const durationVideos = []
     const videos = (res as Videos).videos
     for (const video of videos) {
       if (video.duration >= duration) {
-        const resourceList = video.video_files.sort((a, b) => (a.width == null ? 0 : a.width) - (b.width == null ? 0 : b.width))
-        for (let i = 0; i < resourceList.length; i++) {
-          const element = resourceList[i]
-          if (element.width !== null && element.height !== null) {
-            if (element.width >= baseWidth && element.height >= baseHeight) {
-              const extension = mime.getExtension(element.file_type)
-              const fileName = `${index}.${extension}`
-              const filePath = path.join(videoDir, fileName)
-              await downloadFile(element.link, filePath)
-              return filePath
-            }
-          }
+        durationVideos.push(video)
+      }
+    }
+    const video = durationVideos[Math.floor(Math.random() * durationVideos.length)]
+    const resourceList = video.video_files.sort((a, b) => (a.width == null ? 0 : a.width) - (b.width == null ? 0 : b.width))
+    for (let i = 0; i < resourceList.length; i++) {
+      const element = resourceList[i]
+      if (element.width !== null && element.height !== null) {
+        if (element.width >= baseWidth && element.height >= baseHeight) {
+          const extension = mime.getExtension(element.file_type)
+          const fileName = `${index}.${extension}`
+          const filePath = path.join(videoDir, fileName)
+          await downloadFile(element.link, filePath)
+          return filePath
         }
       }
     }
