@@ -34,6 +34,9 @@ const getVideo = async (query: string, orientation: string, duration: number, vi
         durationVideos.push(video)
       }
     }
+    if (durationVideos.length < 1) {
+      return ''
+    }
     const video = durationVideos[Math.floor(Math.random() * durationVideos.length)]
     const resourceList = video.video_files.sort((a, b) => (a.width == null ? 0 : a.width) - (b.width == null ? 0 : b.width))
     for (let i = 0; i < resourceList.length; i++) {
