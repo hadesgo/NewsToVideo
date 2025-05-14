@@ -22,7 +22,7 @@ const getVideo = async (query: string, orientation: string, duration: number, vi
     default:
       break
   }
-  const res = await Client.videos.search({ query, orientation: orientation, locale: 'zh-CN', per_page: 80 })
+  const res = await Client.videos.search({ query, orientation: orientation, per_page: 80 })
   if ((res as ErrorResponse).error) {
     throw new Error((res as ErrorResponse).error)
   }
