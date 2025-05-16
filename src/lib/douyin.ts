@@ -2,6 +2,7 @@ import { chromium, Page } from 'playwright'
 import fs from 'node:fs'
 
 import { sleep, setInitScript } from 'src/utils/utils.ts'
+import logger from './logger.ts'
 
 const cookieAuth = async (accountFile: string) => {
   const browser = await chromium.launch({ headless: true })
@@ -12,7 +13,7 @@ const cookieAuth = async (accountFile: string) => {
     await page.waitForURL('https://creator.douyin.com/creator-micro/content/upload', { timeout: 5000 })
   }
   catch {
-    console.log('[+] 等待5秒 cookie 失效')
+    console.log('[抖音] [+] 等待5秒 cookie 失效')
     await context.close()
     await browser.close()
     return false
@@ -20,11 +21,11 @@ const cookieAuth = async (accountFile: string) => {
 
   // 2024.06.17 抖音创作者中心改版
   if (await page.getByText('手机号登录').count() || await page.getByText('扫码登录').count()) {
-    console.log('[+] 等待5秒 cookie 失效')
+    console.log('[抖音] [+] 等待5秒 cookie 失效')
     return false
   }
   else {
-    console.log('[+] cookie 有效')
+    console.log('[抖音] [+] cookie 有效')
     return true
   }
 }
@@ -34,7 +35,7 @@ export const douyinSetup = async (accountFile: string, handle = false) => {
     if (!handle) {
       return false
     }
-    console.log('[+] cookie文件不存在或已失效，即将自动打开浏览器，请扫码登录，登陆后会自动生成cookie文件')
+    logger.info('[抖音] [+] cookie文件不存在或已失效，即将自动打开浏览器，请扫码登录，登陆后会自动生成cookie文件')
     await douyinCookieGen(accountFile)
   }
   return true
@@ -44,12 +45,16 @@ const douyinCookieGen = async (accountFile: string) => {
   const options = {
     headless: false,
   }
+  // Make sure to run headed.
   const browser = await chromium.launch(options)
+  // Setup context however you like.
   let context = await browser.newContext()
   context = await setInitScript(context)
+  // Pause the page, and start recording manually.
   const page = await context.newPage()
   await page.goto('https://creator.douyin.com/')
   await page.pause()
+  // 点击调试器的继续，保存cookie
   await context.storageState({ path: accountFile })
 }
 
@@ -67,7 +72,7 @@ export class DouYinVideo {
   }
 
   async handelUploadError(page: Page) {
-    console.log('视频出错了，重新上传中')
+    logger.info('[抖音] 视频出错了，重新上传中')
     await page.locator('div.progress-div [class^="upload-btn-input"]').setInputFiles(this.#filePath)
   }
 
@@ -82,9 +87,9 @@ export class DouYinVideo {
     const page = await context.newPage()
     // 访问指定的 URL
     await page.goto('https://creator.douyin.com/creator-micro/content/upload')
-    console.log(`[+]正在上传-------${this.#title}.mp4`)
+    logger.info(`[抖音] [+]正在上传-------${this.#title}.mp4`)
     // 等待页面跳转到指定的 URL，没进入，则自动等待到超时
-    console.log('[-] 正在打开主页...')
+    logger.info('[抖音] [-] 正在打开主页...')
     await page.waitForURL('https://creator.douyin.com/creator-micro/content/upload')
     // 点击 "上传视频" 按钮
     await page.locator('div[class^=\'container\'] input').setInputFiles(this.#filePath)
@@ -94,18 +99,19 @@ export class DouYinVideo {
       try {
         // 尝试等待第一个 URL
         await page.waitForURL('https://creator.douyin.com/creator-micro/content/publish?enter_from=publish_page', { timeout: 3000 })
-        console.log('[+] 成功进入version_1发布页面!')
+        logger.info('[抖音] [+] 成功进入version_1发布页面!')
         break // 成功进入页面后跳出循环
       }
       catch {
         try {
           // 如果第一个 URL 超时，再尝试等待第二个 URL
           await page.waitForURL('https://creator.douyin.com/creator-micro/content/post/video?enter_from=publish_page', { timeout: 3000 })
-          console.log('[+] 成功进入version_2发布页面!')
+          logger.info('[抖音] [+] 成功进入version_2发布页面!')
           break // 成功进入页面后跳出循环
         }
         catch {
-          console.log('  [-] 超时未进入视频发布页面，重新尝试...')
+          logger.error('[抖音] [-] 超时未进入视频发布页面，重新尝试...')
+          console.log('[抖音] [-] 超时未进入视频发布页面，重新尝试...')
           await sleep(500) // 等待 0.5 秒后重新尝试
         }
       }
@@ -114,7 +120,7 @@ export class DouYinVideo {
     // 检查是否存在包含输入框的元素
     // 这里为了避免页面变化，故使用相对位置定位：作品标题父级右侧第一个元素的input子元素
     await sleep(1000)
-    console.log('  [-] 正在填充标题和话题...')
+    logger.info('[抖音] [-] 正在填充标题和话题...')
     let titleContainer = page.getByText('作品标题').locator('..').locator('xpath=following-sibling::div[1]').locator('input')
     if (await titleContainer.count()) {
       await titleContainer.fill(this.#title)
@@ -134,7 +140,7 @@ export class DouYinVideo {
       await page.type(cssSelector, '#' + tag)
       await page.press(cssSelector, 'Space')
     }
-    console.log(`总共添加${this.#tags.length}个话题`)
+    logger.info(`[抖音] 总共添加${this.#tags.length}个话题`)
 
     while (true) {
       // 判断重新上传按钮是否存在，如果不存在，代表视频正在上传，则等待
@@ -142,21 +148,21 @@ export class DouYinVideo {
         //  新版：定位重新上传
         const number = await page.locator('[class^="long-card"] div:has-text("重新上传")').count()
         if (number > 0) {
-          console.log('  [-]视频上传完毕')
+          logger.info('[抖音] [+] 视频上传完毕')
           break
         }
         else {
-          console.log('  [-] 正在上传视频中...')
+          logger.info('[抖音] [-] 正在上传视频中...')
           await sleep(2000)
 
           if (await page.locator('div.progress-div > div:has-text("上传失败")').count()) {
-            console.log('  [-] 发现上传出错了... 准备重试')
+            logger.error('[抖音] [-] 发现上传出错了... 准备重试')
             await this.handelUploadError(page)
           }
         }
       }
       catch {
-        console.log('  [-] 正在上传视频中...')
+        logger.info('[抖音] [-] 正在上传视频中...')
         await sleep(2000)
       }
     }
@@ -181,18 +187,18 @@ export class DouYinVideo {
           await publishButton.click()
         }
         await page.waitForURL('https://creator.douyin.com/creator-micro/content/manage**', { timeout: 3000 }) // 如果自动跳转到作品页面，则代表发布成功
-        console.log('  [-]视频发布成功')
+        logger.info('[抖音] [+]视频发布成功')
         break
       }
       catch {
-        console.log('  [-] 视频正在发布中...')
+        logger.info('[抖音] [-] 视频正在发布中...')
         await page.screenshot({ fullPage: true })
         await sleep(500)
       }
     }
 
     await context.storageState({ path: this.#accountFile })
-    console.log('  [-]cookie更新完毕！')
+    logger.info('[抖音] [+]cookie更新完毕！')
     await context.close()
     await browser.close()
   }

@@ -8,11 +8,13 @@ import tts from './src/lib/tts.ts'
 
 import { douyinSetup, DouYinVideo } from './src/lib/douyin.ts'
 import { BilibiliVideo } from './src/lib/bilibili.ts'
-import cron from 'node-cron'
+import cron, { TaskContext } from 'node-cron'
 
 const main = async () => {
-  cron.schedule('1 * * * * *', () => {
-    console.log('每天凌晨 3 点执行的定时任务')
+  cron.schedule('15 14 * * *', async (ctx: TaskContext) => {
+    console.log(`Task started at ${ctx.triggeredAt.toISOString()}`)
+    console.log(`Scheduled for: ${ctx.dateLocalIso}`)
+    console.log(`Task status ${await ctx?.task?.getStatus()}`)
   })
 }
 

@@ -12,6 +12,7 @@ import getVideo from './material/video.ts'
 import { saveConfig } from './utils/utils.ts'
 import { DouYinVideo } from './lib/douyin.ts'
 import { BilibiliVideo } from './lib/bilibili.ts'
+import logger from './lib/logger.ts'
 
 const videoLayouts = ['landscape']
 
@@ -42,7 +43,7 @@ const genNewsVideoAndUpload = async () => {
     newsList = await news()
     fs.writeFileSync(newsJsonFilePath, JSON.stringify(newsList))
   }
-  console.log(`获取到 ${newsList.length} 条新闻`)
+  logger.info(`[main] 获取到 ${newsList.length} 条新闻`)
 
   for (let i = 0; i < videoLayouts.length; i++) {
     const layout = videoLayouts[i]
@@ -100,7 +101,7 @@ const genNewsVideoAndUpload = async () => {
         layer.audio = { path: audioInfo.audio, subtitles: audioInfo.subtitles }
         layer.duration = await getVideoDurationInSeconds(audioInfo.audio)
       }
-      console.log(`音频 ${j} 生成完成, 进度: ${j + 1}/${newsList.length}`)
+      logger.info(`[main] 音频 ${j} 生成完成, 进度: ${j + 1}/${newsList.length}`)
       saveConfig(videoConfig, configPath)
 
       // 下载视频素材
@@ -108,7 +109,7 @@ const genNewsVideoAndUpload = async () => {
         const videoPath = await getVideo(news.keywords, layout, layer.duration, materialDir, j)
         if (videoPath) {
           layer.material = { path: videoPath, type: 'video' }
-          console.log(`video ${j} 生成完成, 进度: ${j + 1}/${newsList.length}`)
+          logger.info(`[main] video ${j} 生成完成, 进度: ${j + 1}/${newsList.length}`)
         }
         else {
           // 生成图片
@@ -117,20 +118,23 @@ const genNewsVideoAndUpload = async () => {
             await genImage(news.keywords, `${width}x${height}`, imagePath)
           }
           layer.material = { path: imagePath, type: 'image' }
-          console.log(`image ${j} 生成完成, 进度: ${j + 1}/${newsList.length}`)
+          logger.info(`[main] image ${j} 生成完成, 进度: ${j + 1}/${newsList.length}`)
         }
       }
       else {
-        console.log(`${layer.material.type} ${j} 生成完成, 进度: ${j + 1}/${newsList.length}`)
+        logger.info(`[main] ${layer.material.type} ${j} 生成完成, 进度: ${j + 1}/${newsList.length}`)
       }
       saveConfig(videoConfig, configPath)
     }
     const videoPath = `./out/${today}/${layout}/${videoName}.mp4`
     await genVideo(videoConfig, videoPath)
+    logger.info(`[main] 视频生成成功`)
     const douyinVideo = new DouYinVideo(videoName, videoPath, ['热点', '热点新闻事件'], './out/douyin_account.json')
+    logger.info(`[main] 抖音上传成功`)
     await douyinVideo.upload()
     const bilibiliVideo = new BilibiliVideo(videoName, videoPath, ['热点', '资讯', '全球'], './out/bilibili_account.json')
     await bilibiliVideo.upload()
+    logger.info(`[main] B站上传成功`)
   }
 }
 
