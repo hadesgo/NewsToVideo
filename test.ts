@@ -8,10 +8,12 @@ import tts from './src/lib/tts.ts'
 
 import { douyinSetup, DouYinVideo } from './src/lib/douyin.ts'
 import { BilibiliVideo } from './src/lib/bilibili.ts'
+import cron from 'node-cron'
 
 const main = async () => {
-  const bilibiliVideo = new BilibiliVideo('test', './out/2025-05-15/landscape/每日全球热点新闻资讯-2025年05月15日.mp4', ['热点', '资讯', '全球'], './out/bilibili_account.json')
-  await bilibiliVideo.upload()
+  cron.schedule('1 * * * * *', () => {
+    console.log('每天凌晨 3 点执行的定时任务')
+  })
 }
 
 main()

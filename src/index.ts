@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import cron, { TaskContext } from 'node-cron'
 
 import { NewsVideoConfig, LayoutType } from './type.ts'
 import news from './lib/news.ts'
@@ -21,7 +22,7 @@ function formatTime(date: Date): string[] {
   return [`${year}-${month}-${day}`, `${year}年${month}月${day}日`]
 }
 
-const main = async () => {
+const genNewsVideoAndUpload = async () => {
   const formatTodays = formatTime(new Date())
   const today = formatTodays[0]
   const videoName = `每日全球热点新闻资讯-${formatTodays[1]}`
@@ -131,6 +132,15 @@ const main = async () => {
     const bilibiliVideo = new BilibiliVideo(videoName, videoPath, ['热点', '资讯', '全球'], './out/bilibili_account.json')
     await bilibiliVideo.upload()
   }
+}
+
+const main = () => {
+  cron.schedule('0 18 * * *', async (ctx: TaskContext) => {
+    console.log(`Task started at ${ctx.triggeredAt.toISOString()}`)
+    console.log(`Scheduled for: ${ctx.dateLocalIso}`)
+    await genNewsVideoAndUpload()
+    console.log(`Task status ${await ctx?.task?.getStatus()}`)
+  })
 }
 
 main()
