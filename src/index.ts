@@ -10,6 +10,7 @@ import { getVideoDurationInSeconds } from './utils/ffmpeg.ts'
 import getVideo from './material/video.ts'
 import { saveConfig } from './utils/utils.ts'
 import { DouYinVideo } from './lib/douyin.ts'
+import { BilibiliVideo } from './lib/bilibili.ts'
 
 const videoLayouts = ['landscape']
 
@@ -127,6 +128,8 @@ const main = async () => {
     await genVideo(videoConfig, videoPath)
     const douyinVideo = new DouYinVideo(videoName, videoPath, ['热点', '热点新闻事件'], './out/douyin_account.json')
     await douyinVideo.upload()
+    const bilibiliVideo = new BilibiliVideo(videoName, videoPath, ['热点', '资讯', '全球'], './out/bilibili_account.json')
+    await bilibiliVideo.upload()
   }
 }
 
