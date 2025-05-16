@@ -2,7 +2,7 @@ import OpenAI from 'openai'
 
 // 初始化 openai 客户端
 const openai = new OpenAI({
-  apiKey: 'sk-0b74c67ac056452fae5a9aec1e7a65b7', // 从环境变量读取
+  apiKey: process.env.QWEN_API_KEY, // 从环境变量读取
   baseURL: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
 })
 

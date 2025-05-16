@@ -5,7 +5,7 @@ import { sleep, downloadFile } from 'src/utils/utils.ts'
 const MAX_RETRY_COUNT = 3
 
 const URL = 'https://api.siliconflow.cn/v1/images/generations'
-const API_KEY = 'sk-kcqhpqquhjwesmklkvxzthvqarrliwdmlsqwqcieousxjdtp'
+const API_KEY = process.env.SILICONFLOW_API_KEY
 
 const genImage = async (text: string, imageSize: string, imagePath: string) => {
   let retryCount = 0

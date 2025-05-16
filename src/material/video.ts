@@ -4,7 +4,7 @@ import path from 'path'
 
 import { downloadFile } from 'src/utils/utils.ts'
 
-const API_KEY = 'flKAf6wzHqQllPQGbRpWpPOdOyLWkM3zA8z2phmApDNcuMNKeRtM3BMV'
+const API_KEY = process.env.PEXELS_API_KEY as string
 const Client = createClient(API_KEY)
 
 const getVideo = async (query: string, orientation: string, duration: number, videoDir: string, index: number) => {

@@ -10,8 +10,8 @@ const TtsClient = tencentcloud.tts.v20190823.Client
 const clientConfig = {
   // 腾讯云认证信息
   credential: {
-    secretId: 'AKIDKbmgT3PcdGi1FI8kBRVM2ZtzrX0KUTFr',
-    secretKey: 'UkpgOvGPL3by87sQnxtb9Ve0GJD6Xlpj',
+    secretId: process.env.TENCENT_SECRET_ID,
+    secretKey: process.env.TENCENT_SECRET_KEY,
   },
   profile: {
     httpProfile: {

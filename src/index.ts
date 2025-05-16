@@ -1,6 +1,9 @@
 import fs from 'fs'
 import path from 'path'
+import { AxiosError } from 'axios'
 import cron, { TaskContext } from 'node-cron'
+import stringify from 'safe-stable-stringify'
+import 'dotenv/config'
 
 import { NewsVideoConfig, LayoutType } from './type.ts'
 import news from './lib/news.ts'
@@ -13,6 +16,7 @@ import { saveConfig } from './utils/utils.ts'
 import { DouYinVideo } from './lib/douyin.ts'
 import { BilibiliVideo } from './lib/bilibili.ts'
 import logger from './lib/logger.ts'
+import { sendMail } from './lib/email.ts'
 
 const videoLayouts = ['landscape']
 
@@ -142,7 +146,29 @@ const main = () => {
   cron.schedule('0 18 * * *', async (ctx: TaskContext) => {
     console.log(`Task started at ${ctx.triggeredAt.toISOString()}`)
     console.log(`Scheduled for: ${ctx.dateLocalIso}`)
-    await genNewsVideoAndUpload()
+    try {
+      await genNewsVideoAndUpload()
+      await sendMail('🥳视频发布成功', '视频发布成功！！！🎉🎉🎉🎉🎉🎉')
+    }
+    catch (error) {
+      let message = ''
+      if (error instanceof AxiosError) {
+        if (error.response) {
+          message = `url: ${error.response.config.url}, code: ${error.code}, status: ${error.response.status}, data: ${error.response.data ? stringify(error.response.data) : ''}`
+        }
+        else {
+          message = `url: ${error?.config?.url}, code: ${error.code}, cause: ${error.cause ? stringify(error.cause) : ''}`
+        }
+      }
+      else if (error instanceof Error) {
+        message = `${error.message}\n${error.stack}`
+      }
+      else {
+        message = `${error}`
+      }
+      await sendMail('😢视频发布失败', `message:${message}`)
+    }
+
     console.log(`Task status ${await ctx?.task?.getStatus()}`)
   })
 }
