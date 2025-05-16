@@ -28,6 +28,7 @@
     "mime": "^4.0.7",
     "openai": "^4.96.0",
     "pexels": "^1.4.0",
+    "playwright": "^1.52.0",
     "tencentcloud-sdk-nodejs-tts": "^4.1.22",
     "tsx": "^4.19.3"
   }

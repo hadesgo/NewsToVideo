@@ -1,5 +1,6 @@
 import fs from 'fs'
 import axios from 'axios'
+import { BrowserContext } from 'playwright'
 
 import { NewsVideoConfig } from 'src/type.ts'
 
@@ -29,4 +30,10 @@ export const downloadFile = async (url: string, filePath: string = ''): Promise<
 
 export const saveConfig = (config: NewsVideoConfig, filePath: string): void => {
   fs.writeFileSync(filePath, JSON.stringify(config), 'utf-8')
+}
+
+export const setInitScript = async (context: BrowserContext) => {
+  const stealthJsPath = './assets/stealth.min.js'
+  await context.addInitScript({ path: stealthJsPath })
+  return context
 }

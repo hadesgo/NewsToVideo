@@ -9,6 +9,7 @@ import genVideo from './lib/video.ts'
 import { getVideoDurationInSeconds } from './utils/ffmpeg.ts'
 import getVideo from './material/video.ts'
 import { saveConfig } from './utils/utils.ts'
+import { DouYinVideo } from './lib/douyin.ts'
 
 const videoLayouts = ['landscape']
 
@@ -122,7 +123,10 @@ const main = async () => {
       }
       saveConfig(videoConfig, configPath)
     }
-    await genVideo(videoConfig, `./out/${today}/${layout}/${videoName}.mp4`)
+    const videoPath = `./out/${today}/${layout}/${videoName}.mp4`
+    await genVideo(videoConfig, videoPath)
+    const douyinVideo = new DouYinVideo(videoName, videoPath, ['热点', '热点新闻事件'], './out/douyin_account.json')
+    await douyinVideo.upload()
   }
 }
 
