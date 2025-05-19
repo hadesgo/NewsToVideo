@@ -3,6 +3,8 @@ import crypto from 'crypto'
 import fs from 'fs'
 
 import { addSilence } from 'src/utils/ffmpeg.ts'
+import { MAX_RETRY_COUNT } from 'src/constant.ts'
+import { sleep } from 'src/utils/utils.ts'
 
 // 导入对应产品模块的client models。
 const TtsClient = tencentcloud.tts.v20190823.Client
@@ -28,25 +30,38 @@ const clientConfig = {
 const client = new TtsClient(clientConfig)
 
 const tts = async (text: string, outputPath: string) => {
-  const params = {
-    Text: text,
-    SessionId: crypto.randomUUID(),
-    VoiceType: 501001,
-    EnableSubtitle: true,
-    Codec: 'mp3',
-    Speed: 0.3,
-    Volume: 10,
+  let retryCount = 0
+  let networkError = null
+  while (retryCount < MAX_RETRY_COUNT) {
+    try {
+      const params = {
+        Text: text,
+        SessionId: crypto.randomUUID(),
+        VoiceType: 501001,
+        EnableSubtitle: true,
+        Codec: 'mp3',
+        Speed: 0.3,
+        Volume: 10,
+      }
+
+      const res = await client.TextToVoice(params)
+      if (res.Audio) {
+        const audioBuffer = Buffer.from(res.Audio, 'base64')
+        fs.writeFileSync(outputPath, audioBuffer)
+        await addSilence(outputPath, 0.3)
+      }
+      return {
+        audio: outputPath,
+        subtitles: res.Subtitles,
+      }
+    }
+    catch (error) {
+      networkError = error
+      retryCount += 1
+      await sleep(3000)
+    }
   }
-  const res = await client.TextToVoice(params)
-  if (res.Audio) {
-    const audioBuffer = Buffer.from(res.Audio, 'base64')
-    fs.writeFileSync(outputPath, audioBuffer)
-    await addSilence(outputPath, 0.3)
-  }
-  return {
-    audio: outputPath,
-    subtitles: res.Subtitles,
-  }
+  throw networkError
 }
 
 export default tts

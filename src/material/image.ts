@@ -1,8 +1,7 @@
 import axios from 'axios'
 
 import { sleep, downloadFile } from 'src/utils/utils.ts'
-
-const MAX_RETRY_COUNT = 3
+import { MAX_RETRY_COUNT } from 'src/constant.ts'
 
 const URL = 'https://api.siliconflow.cn/v1/images/generations'
 const API_KEY = process.env.SILICONFLOW_API_KEY
@@ -32,8 +31,8 @@ const genImage = async (text: string, imageSize: string, imagePath: string) => {
       retryCount += 1
       await sleep(1000 * 60)
     }
-    throw networkError
   }
+  throw networkError
 }
 
 export default genImage

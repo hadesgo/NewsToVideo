@@ -3,6 +3,7 @@ import mime from 'mime'
 import path from 'path'
 
 import { downloadFile } from 'src/utils/utils.ts'
+import logger from 'src/lib/logger.ts'
 
 const API_KEY = process.env.PEXELS_API_KEY as string
 const Client = createClient(API_KEY)
@@ -24,7 +25,7 @@ const getVideo = async (query: string, orientation: string, duration: number, vi
   }
   const res = await Client.videos.search({ query, orientation: orientation, per_page: 80 })
   if ((res as ErrorResponse).error) {
-    throw new Error((res as ErrorResponse).error)
+    logger.error('[pexels] 搜索视频失败：', (res as ErrorResponse).error)
   }
   else {
     const durationVideos = []
