@@ -17,6 +17,7 @@ import { DouYinVideo } from './lib/douyin.ts'
 import { BilibiliVideo } from './lib/bilibili.ts'
 import logger from './lib/logger.ts'
 import { sendMail } from './lib/email.ts'
+import { TencentVideo } from './lib/tencent.ts'
 
 const videoLayouts = ['landscape']
 
@@ -139,6 +140,9 @@ const genNewsVideoAndUpload = async () => {
     const bilibiliVideo = new BilibiliVideo(videoName, videoPath, ['热点', '资讯', '全球'], './out/bilibili_account.json')
     await bilibiliVideo.upload()
     logger.info(`[main] B站上传成功`)
+    const tencentVideo = new TencentVideo(videoName, videoPath, ['热点', '资讯', '全球'], './out/tencent_account.json', '新闻资讯')
+    await tencentVideo.upload()
+    logger.info(`[main] 视频号上传成功`)
   }
 }
 

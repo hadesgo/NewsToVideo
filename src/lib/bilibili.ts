@@ -18,7 +18,7 @@ export class BilibiliVideo {
       '--user-cookie', this.#accountFile,
       'upload',
       '--line', 'bda2',
-      '--tid', '170',
+      '--tid', '204',
       '--title', this.#title,
       '--tag', this.#tags.join(','),
       this.#filePath,
