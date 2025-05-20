@@ -121,7 +121,7 @@ export class TencentVideo {
 
   async upload() {
     // 使用 Chromium (这里使用系统内浏览器，用chromium 会造成h264错误
-    const browser = await chromium.launch({ headless: false, executablePath: process.env.LOCAL_CHROME_PATH })
+    const browser = await chromium.launch({ headless: true, executablePath: process.env.LOCAL_CHROME_PATH })
     // 创建一个浏览器上下文，使用指定的 cookie 文件
     let context = await browser.newContext({ storageState: this.#accountFile })
     context = await setInitScript(context)
@@ -151,7 +151,7 @@ export class TencentVideo {
     await this.clickPublish(page)
 
     await context.storageState({ path: this.#accountFile }) // 保存cookie
-    logger.info('[视频号] [-]cookie更新完毕！')
+    logger.info('[视频号] [-] cookie更新完毕！')
     // 关闭浏览器上下文和浏览器实例
     await context.close()
     await browser.close()
@@ -174,13 +174,13 @@ export class TencentVideo {
           await publishButtion.click()
         }
         await page.waitForURL('https://channels.weixin.qq.com/platform/post/list', { timeout: 1500 })
-        logger.info('[视频号] [-]视频发布成功')
+        logger.info('[视频号] [-] 视频发布成功')
         break
       }
       catch (error) {
         const currentUrl = page.url()
         if (currentUrl.includes('https://channels.weixin.qq.com/platform/post/list')) {
-          logger.info('[视频号] [-]视频发布成功')
+          logger.info('[视频号] [-] 视频发布成功')
           break
         }
         else {
@@ -199,7 +199,7 @@ export class TencentVideo {
         // 匹配删除按钮，代表视频上传完毕
         const publishButtion = await page.getByRole('button', { name: '发表' }).getAttribute('class')
         if (!publishButtion?.includes('weui-desktop-btn_disabled')) {
-          logger.info('[视频号] [-]视频上传完毕')
+          logger.info('[视频号] [-] 视频上传完毕')
           break
         }
         else {

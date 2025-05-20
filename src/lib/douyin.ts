@@ -87,7 +87,7 @@ export class DouYinVideo {
     const page = await context.newPage()
     // 访问指定的 URL
     await page.goto('https://creator.douyin.com/creator-micro/content/upload')
-    logger.info(`[抖音] [+]正在上传-------${this.#title}.mp4`)
+    logger.info(`[抖音] [+] 正在上传-------${this.#title}.mp4`)
     // 等待页面跳转到指定的 URL，没进入，则自动等待到超时
     logger.info('[抖音] [-] 正在打开主页...')
     await page.waitForURL('https://creator.douyin.com/creator-micro/content/upload')
@@ -187,7 +187,7 @@ export class DouYinVideo {
           await publishButton.click()
         }
         await page.waitForURL('https://creator.douyin.com/creator-micro/content/manage**', { timeout: 3000 }) // 如果自动跳转到作品页面，则代表发布成功
-        logger.info('[抖音] [+]视频发布成功')
+        logger.info('[抖音] [+] 视频发布成功')
         break
       }
       catch {
@@ -198,7 +198,7 @@ export class DouYinVideo {
     }
 
     await context.storageState({ path: this.#accountFile })
-    logger.info('[抖音] [+]cookie更新完毕！')
+    logger.info('[抖音] [+] cookie更新完毕！')
     await context.close()
     await browser.close()
   }
