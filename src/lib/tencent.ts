@@ -121,7 +121,7 @@ export class TencentVideo {
 
   async upload() {
     // 使用 Chromium (这里使用系统内浏览器，用chromium 会造成h264错误
-    const browser = await chromium.launch({ headless: true, executablePath: process.env.LOCAL_CHROME_PATH })
+    const browser = await chromium.launch({ headless: false, executablePath: process.env.LOCAL_CHROME_PATH })
     // 创建一个浏览器上下文，使用指定的 cookie 文件
     let context = await browser.newContext({ storageState: this.#accountFile })
     context = await setInitScript(context)
