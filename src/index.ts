@@ -120,7 +120,7 @@ const genNewsVideoAndUpload = async () => {
           // 生成图片
           const imagePath = path.join(materialDir, `${j}.png`)
           if (!fs.existsSync(imagePath)) {
-            await genImage(news.content, `${width}x${height}`, imagePath)
+            await genImage(news.keywords, `${width}x${height}`, imagePath)
           }
           layer.material = { path: imagePath, type: 'image' }
           logger.info(`[main] image ${j} 生成完成, 进度: ${j + 1}/${newsList.length}`)
@@ -149,7 +149,8 @@ const genNewsVideoAndUpload = async () => {
   }
 }
 
-const main = () => {
+const main = async () => {
+  await genNewsVideoAndUpload()
   cron.schedule('30 17 * * *', async (ctx: TaskContext) => {
     console.log(`Task started at ${ctx.triggeredAt.toISOString()}`)
     console.log(`Scheduled for: ${ctx.dateLocalIso}`)

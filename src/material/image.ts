@@ -15,6 +15,7 @@ const genImage = async (text: string, imageSize: string, imagePath: string) => {
         model: 'Kwai-Kolors/Kolors',
         prompt: text,
         image_size: imageSize,
+        negative_prompt: 'blurry, pixelated, low resolution, grainy, noisy, out of focus, jagged edges, missing details,deformed hands/ face / limbs, extra fingers, asymmetrical features, incomplete objects, poor lighting, overexposed, underexposed, color distortion, washed-out colors, watermark, text, signature, compression artifacts, tiling patterns',
       }
       const res = await axios.post(URL, postBody, {
         headers: {
