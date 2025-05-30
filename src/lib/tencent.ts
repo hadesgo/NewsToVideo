@@ -58,10 +58,17 @@ const cookieAuth = async (accountFile: string) => {
   try {
     await page.waitForSelector('div.title-name:has-text("微信小店")', { timeout: 5000 }) // 等待5秒
     logger.error('[视频号] [+] 等待5秒 cookie 失效')
+    // 关闭浏览器上下文和浏览器实例
+    await context.close()
+    await browser.close()
     return false
   }
   catch {
     logger.info('[视频号] [+] cookie 有效')
+    await context.storageState({ path: accountFile })
+    // 关闭浏览器上下文和浏览器实例
+    await context.close()
+    await browser.close()
     return true
   }
 }
@@ -82,6 +89,9 @@ const getTencentCookie = async (accountFile: string) => {
   await page.pause()
   // 点击调试器的继续，保存cookie
   await context.storageState({ path: accountFile })
+  // 关闭浏览器上下文和浏览器实例
+  await context.close()
+  await browser.close()
 }
 
 export const weixinSetup = async (accountFile: string, handle = false) => {

@@ -17,7 +17,7 @@ import { DouYinVideo } from './lib/douyin.ts'
 import { BilibiliVideo } from './lib/bilibili.ts'
 import logger from './lib/logger.ts'
 import { sendMail } from './lib/email.ts'
-import { TencentVideo } from './lib/tencent.ts'
+import { TencentVideo, weixinSetup } from './lib/tencent.ts'
 
 const videoLayouts = ['landscape']
 
@@ -177,6 +177,22 @@ const main = async () => {
     }
 
     console.log(`Task status ${await ctx?.task?.getStatus()}`)
+  })
+  cron.schedule('*/30 * * * *', async () => {
+    try {
+      await weixinSetup('./out/tencent_account.json', true)
+      logger.error('[视频号] 视频号cookie刷新成功', `message:${message}`)
+    }
+    catch (error) {
+      let message = ''
+      if (error instanceof Error) {
+        message = `${error.message}\n${error.stack}`
+      }
+      else {
+        message = `${error}`
+      }
+      logger.error('[视频号] cookie刷新失败', `message:${message}`)
+    }
   })
 }
 
