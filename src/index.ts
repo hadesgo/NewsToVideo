@@ -150,7 +150,6 @@ const genNewsVideoAndUpload = async () => {
 }
 
 const main = async () => {
-  await genNewsVideoAndUpload()
   cron.schedule('30 17 * * *', async (ctx: TaskContext) => {
     console.log(`Task started at ${ctx.triggeredAt.toISOString()}`)
     console.log(`Scheduled for: ${ctx.dateLocalIso}`)
