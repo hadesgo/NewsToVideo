@@ -181,7 +181,7 @@ const main = async () => {
   cron.schedule('*/30 * * * *', async () => {
     try {
       await weixinSetup('./out/tencent_account.json', true)
-      logger.error('[视频号] 视频号cookie刷新成功', `message:${message}`)
+      logger.info('[视频号] 视频号cookie刷新成功')
     }
     catch (error) {
       let message = ''
