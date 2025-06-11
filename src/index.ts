@@ -139,9 +139,9 @@ const genNewsVideoAndUpload = async () => {
     await douyinVideo.upload()
     logger.info(`[main] 抖音上传成功`)
 
-    const bilibiliVideo = new BilibiliVideo(videoName, videoPath, ['热点', '资讯', '全球'], './out/bilibili_account.json')
-    await bilibiliVideo.upload()
-    logger.info(`[main] B站上传成功`)
+    // const bilibiliVideo = new BilibiliVideo(videoName, videoPath, ['热点', '资讯', '全球'], './out/bilibili_account.json')
+    // await bilibiliVideo.upload()
+    // logger.info(`[main] B站上传成功`)
 
     const tencentVideo = new TencentVideo(videoName, videoPath, ['热点', '资讯', '全球'], './out/tencent_account.json', '新闻资讯')
     await tencentVideo.upload()
