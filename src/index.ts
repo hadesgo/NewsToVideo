@@ -45,7 +45,7 @@ const genNewsVideoAndUpload = async () => {
     newsList = JSON.parse(fs.readFileSync(newsJsonFilePath, 'utf-8'))
   }
   else {
-    newsList = await news()
+    newsList = await news(formatTodays[1])
     fs.writeFileSync(newsJsonFilePath, JSON.stringify(newsList))
   }
   logger.info(`[main] 获取到 ${newsList.length} 条新闻`)

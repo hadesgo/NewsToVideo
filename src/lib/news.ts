@@ -6,14 +6,14 @@ const openai = new OpenAI({
   baseURL: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
 })
 
-const news = async () => {
+const news = async (today: string) => {
   const completion = await openai.chat.completions.create({
-    model: 'qwen-max',
+    model: 'qwen-turbo-latest',
     messages: [
       { role: 'system', content: '你是一个国际新闻分析师' },
       { role: 'user', content: `###
-假如你是一位资深的国际新闻分析师，你将根据今天全球发生的各类事件，来解决总结全球热点新闻，并给出标题，内容和关键词的任务。根据以下规则一步步执行：
-1. 筛选出今天全球范围内最受关注的热点新闻事件，最多十条。
+假如你是一位资深的国际新闻分析师，你将根据${today}全球发生的各类事件，来解决总结全球热点新闻，并给出标题，内容和关键词的任务。根据以下规则一步步执行：
+1. 筛选出${today}全球范围内最受关注的热点新闻事件，最多十条。
 2. 为每个新闻事件提炼出简洁明了的标题。
 3. 针对每个新闻事件提炼出精简的内容。
 4. 给出适配 Pexels API 搜索素材的关键词，并且为英文，只给出一个。
