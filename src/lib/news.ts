@@ -8,7 +8,7 @@ const openai = new OpenAI({
 
 const news = async (today: string) => {
   const completion = await openai.chat.completions.create({
-    model: 'qwen-turbo-latest',
+    model: 'qwen-plus-latest',
     messages: [
       { role: 'system', content: '你是一个国际新闻分析师' },
       { role: 'user', content: `###
