@@ -80,14 +80,14 @@ function textBoxfunc({ width, height, fabric, params }: CustomFabricFunctionArgs
       newsTextBox.top = RedTopRightParallelogram.top + (newsTextBox.height / 5)
       canvas.add(newsTextBox)
 
-      const newsTitle = new fabric.Textbox(params.title, { fill: '#41318E', fontWeight: 'bold', fontSize: 40, fontFamily: '微软雅黑' })
+      const newsTitle = new fabric.Textbox(params.title, { fill: '#41318E', fontWeight: 'bold', fontSize: 35, fontFamily: '微软雅黑', width: 1000 })
       newsTitle.left = 485
-      newsTitle.top = 830
+      newsTitle.top = 825
       canvas.add(newsTitle)
 
-      const contentTitle = new fabric.Textbox(params.content, { fill: '#41318E', fontSize: 35, fontFamily: '微软雅黑', width: 1060, splitByGrapheme: true })
+      const contentTitle = new fabric.Textbox(params.content, { fill: '#41318E', fontSize: 30, fontFamily: '微软雅黑', width: 1160, splitByGrapheme: true })
       contentTitle.left = 485
-      contentTitle.top = 890
+      contentTitle.top = 875
       canvas.add(contentTitle)
     },
 
@@ -113,7 +113,7 @@ function avatarfunc({ width, height, fabric }: CustomFabricFunctionArgs): Custom
         top: -radius,
         objectCaching: false,
       })
-      const imageData = await loadImage('../assets/女主播.png')
+      const imageData = await loadImage('./assets/女主播.png')
       const avatar = new fabric.FabricImage(imageData)
       avatar.set({
         cropX: config.x,
@@ -180,7 +180,7 @@ const genVideo = async (config: NewsVideoConfig, outPath: string) => {
           type: 'video',
           cutFrom: 0,
           cutTo: layerConfig.duration,
-          path: './assets/backgroud_video_0.mp4',
+          path: './assets/backgroud_video.mp4',
           resizeMode: 'cover',
         },
         {
