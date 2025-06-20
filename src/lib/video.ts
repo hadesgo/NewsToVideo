@@ -158,16 +158,16 @@ const genVideo = async (config: NewsVideoConfig, outPath: string) => {
       break
   }
   const clips = []
-  // clips.push({
-  //   duration: 5,
-  //   layers: [
-  //     {
-  //       type: 'video',
-  //       path: `./assets/Opening-${config.layout}.mp4`,
-  //       resizeMode: 'contain',
-  //     },
-  //   ],
-  // })
+  clips.push({
+    duration: 3,
+    layers: [
+      {
+        type: 'video',
+        path: `./assets/Opening-${config.layout}.mp4`,
+        resizeMode: 'contain',
+      },
+    ],
+  })
   for (let index = 0; index < config.layers.length; index++) {
     const layerConfig = config.layers[index]
     const audio = layerConfig.audio
