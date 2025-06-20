@@ -94,10 +94,10 @@ function textBoxfunc({ width, height, fabric, params }: CustomFabricFunctionArgs
 
 async function avatarfunc({ image, fabric }: VideoPostProcessingFunctionArgs): Promise<void> {
   const config = {
-    height: 726,
-    width: 726,
-    x: 163,
-    y: -3,
+    height: 854,
+    width: 854,
+    x: 118,
+    y: -41,
   }
   const radius = Math.min(config.width, config.height) / 2
   const circle = new fabric.Circle({
