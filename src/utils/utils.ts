@@ -1,6 +1,7 @@
 import fs from 'fs'
 import axios from 'axios'
 import { BrowserContext } from 'playwright'
+import FormData from 'form-data'
 
 import { NewsVideoConfig } from 'src/type.ts'
 
@@ -36,4 +37,24 @@ export const setInitScript = async (context: BrowserContext) => {
   const stealthJsPath = './assets/stealth.min.js'
   await context.addInitScript({ path: stealthJsPath })
   return context
+}
+
+export async function genTalkVideo(audioPath: string, videoPath: string, today: string, index: number) {
+  const form = new FormData()
+  form.append('file', fs.createReadStream(audioPath), { filename: `${today}-${index}.mp3`, contentType: 'audio/mp3' }) // 替换为你的音频路径
+  const response = await axios.post('http://192.168.7.240:3000/generate_video', form, {
+    headers: form.getHeaders(),
+    responseType: 'stream',
+  })
+  // 保存返回的视频
+  const writer = fs.createWriteStream(videoPath)
+  response.data.pipe(writer)
+  await new Promise((resolve, reject) => {
+    writer.once('error', (err) => {
+      reject(err)
+    })
+    writer.once('close', () => {
+      resolve(true)
+    })
+  })
 }

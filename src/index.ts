@@ -12,7 +12,7 @@ import genImage from './material/image.ts'
 import genVideo from './lib/video.ts'
 import { getVideoDurationInSeconds } from './utils/ffmpeg.ts'
 import getVideo from './material/video.ts'
-import { saveConfig } from './utils/utils.ts'
+import { saveConfig, genTalkVideo } from './utils/utils.ts'
 import { DouYinVideo } from './lib/douyin.ts'
 import { BilibiliVideo } from './lib/bilibili.ts'
 import logger from './lib/logger.ts'
@@ -38,6 +38,9 @@ const genNewsVideoAndUpload = async () => {
 
   const aduioDir = path.join(todayDir, 'audio')
   fs.mkdirSync(aduioDir, { recursive: true })
+
+  const talkVideolDir = path.join(todayDir, 'talk-video')
+  fs.mkdirSync(talkVideolDir, { recursive: true })
 
   const newsJsonFilePath = path.join(todayDir, 'news.json')
   let newsList = []
@@ -131,6 +134,13 @@ const genNewsVideoAndUpload = async () => {
       }
       saveConfig(videoConfig, configPath)
     }
+    for (let k = 0; k < videoConfig.layers.length; k++) {
+      const layer = videoConfig.layers[k]
+      const talkVideoPath = path.join(talkVideolDir, `${k}.mp4`)
+      await genTalkVideo(layer.audio.path, talkVideoPath, today, k)
+      layer.talkVideo = { path: talkVideoPath }
+      saveConfig(videoConfig, configPath)
+    }
     const videoPath = `./out/${today}/${layout}/${videoName}.mp4`
     await genVideo(videoConfig, videoPath)
     logger.info(`[main] 视频生成成功`)
@@ -150,7 +160,7 @@ const genNewsVideoAndUpload = async () => {
 }
 
 const main = async () => {
-  cron.schedule('30 17 * * *', async (ctx: TaskContext) => {
+  cron.schedule('0 17 * * *', async (ctx: TaskContext) => {
     console.log(`Task started at ${ctx.triggeredAt.toISOString()}`)
     console.log(`Scheduled for: ${ctx.dateLocalIso}`)
     try {

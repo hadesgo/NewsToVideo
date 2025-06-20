@@ -1,14 +1,9 @@
-import type { CustomFabricFunctionArgs, CustomFabricFunctionCallbacks } from 'editly'
+import type { CustomFabricFunctionArgs, CustomFabricFunctionCallbacks, VideoPostProcessingFunctionArgs } from 'editly'
 import Editly from 'editly'
-import { util } from 'fabric/node'
-import fileUrl from 'file-url'
 
 import { NewsVideoConfig } from 'src/type.ts'
 
 export const isUrl = (path: string) => /^https?:\/\//.test(path)
-
-const loadImage = (pathOrUrl: string) =>
-  util.loadImage(fileUrl(pathOrUrl))
 
 function textBoxfunc({ width, height, fabric, params }: CustomFabricFunctionArgs): CustomFabricFunctionCallbacks {
   return {
@@ -97,45 +92,32 @@ function textBoxfunc({ width, height, fabric, params }: CustomFabricFunctionArgs
   }
 }
 
-function avatarfunc({ width, height, fabric }: CustomFabricFunctionArgs): CustomFabricFunctionCallbacks {
-  return {
-    async onRender(progress, canvas) {
-      const config = {
-        height: 849,
-        width: 849,
-        x: 263,
-        y: 130,
-      }
-      const radius = Math.min(config.width, config.height) / 2
-      const circle = new fabric.Circle({
-        radius,
-        left: -radius,
-        top: -radius,
-        objectCaching: false,
-      })
-      const imageData = await loadImage('./assets/女主播.png')
-      const avatar = new fabric.FabricImage(imageData)
-      avatar.set({
-        cropX: config.x,
-        cropY: config.y,
-        width: config.width,
-        height: config.height,
-        left: -config.width / 2,
-        top: -config.height / 2,
-      })
-      const group = new fabric.Group([circle, avatar])
-      group.clipPath = circle
-      group.left = 105
-      group.top = 680
-      group.scaleToWidth(336)
-
-      canvas.add(group)
-    },
-
-    onClose() {
-      // Cleanup if you initialized anything
-    },
+async function avatarfunc({ image, fabric }: VideoPostProcessingFunctionArgs): Promise<void> {
+  const config = {
+    height: 726,
+    width: 726,
+    x: 163,
+    y: -3,
   }
+  const radius = Math.min(config.width, config.height) / 2
+  const circle = new fabric.Circle({
+    radius,
+    left: -radius,
+    top: -radius,
+    objectCaching: false,
+  })
+  image.set({
+    cropX: config.x,
+    cropY: config.y,
+    width: config.width,
+    height: config.height,
+    left: -config.width / 2,
+    top: -config.height / 2,
+    clipPath: circle,
+  })
+  image.left = 105
+  image.top = 680
+  image.scaleToWidth(336)
 }
 
 const genVideo = async (config: NewsVideoConfig, outPath: string) => {
@@ -170,7 +152,7 @@ const genVideo = async (config: NewsVideoConfig, outPath: string) => {
   })
   for (let index = 0; index < config.layers.length; index++) {
     const layerConfig = config.layers[index]
-    const audio = layerConfig.audio
+    const talkVideo = layerConfig.talkVideo
     const material = layerConfig.material
     const news = layerConfig.news
     const clip = {
@@ -204,12 +186,12 @@ const genVideo = async (config: NewsVideoConfig, outPath: string) => {
           content: news.content,
         },
         {
-          type: 'fabric',
-          func: avatarfunc,
-        },
-        {
-          type: 'audio',
-          path: audio.path,
+          type: 'video',
+          cutFrom: 0,
+          cutTo: layerConfig.duration,
+          resizeMode: 'contain',
+          path: talkVideo.path,
+          fabricImagePostProcessing: avatarfunc,
         },
       ],
     }
