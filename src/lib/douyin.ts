@@ -63,12 +63,14 @@ export class DouYinVideo {
   #tags: string[]
   #filePath: string
   #accountFile: string
+  #thumbnailPath: string
 
-  constructor(title: string, filePath: string, tags: string[], accountFile: string) {
+  constructor(title: string, filePath: string, tags: string[], thumbnailPath: string, accountFile: string) {
     this.#title = title
     this.#filePath = filePath
     this.#tags = tags
     this.#accountFile = accountFile
+    this.#thumbnailPath = thumbnailPath
   }
 
   async handelUploadError(page: Page) {
@@ -167,6 +169,9 @@ export class DouYinVideo {
       }
     }
 
+    // 上传视频封面
+    await this.setThumbnail(page, this.#thumbnailPath)
+
     // 頭條/西瓜
     const thirdPartElement = '[class^="info"] > [class^="first-part"] div div.semi-switch'
     // 定位是否有第三方平台
@@ -201,5 +206,18 @@ export class DouYinVideo {
     logger.info('[抖音] [+] cookie更新完毕！')
     await context.close()
     await browser.close()
+  }
+
+  async setThumbnail(page: Page, thumbnailPath: string) {
+    if (thumbnailPath) {
+      await page.click('text="选择封面"')
+      await page.waitForSelector('div.semi-modal-content:visible')
+      await page.click('text="设置竖封面"')
+      await page.waitForTimeout(2000) // 等待2秒
+      // 定位到上传区域并点击
+      await page.locator('div[class^=\'semi-upload upload\'] >> input.semi-upload-hidden-input').setInputFiles(thumbnailPath)
+      await page.waitForTimeout(2000) // 等待2秒
+      await page.locator('div[class^=\'extractFooter\'] button:visible:has-text(\'完成\')').click()
+    }
   }
 }

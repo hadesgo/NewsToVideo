@@ -145,7 +145,7 @@ const genNewsVideoAndUpload = async () => {
     await genVideo(videoConfig, videoPath)
     logger.info(`[main] 视频生成成功`)
 
-    const douyinVideo = new DouYinVideo(videoName, videoPath, ['热点', '热点新闻事件'], './out/douyin_account.json')
+    const douyinVideo = new DouYinVideo(videoName, videoPath, ['热点', '热点新闻事件'], './assets/thumbnail.png', './out/douyin_account.json')
     await douyinVideo.upload()
     logger.info(`[main] 抖音上传成功`)
 
@@ -187,22 +187,6 @@ const main = async () => {
     }
 
     console.log(`Task status ${await ctx?.task?.getStatus()}`)
-  })
-  cron.schedule('*/30 * * * *', async () => {
-    try {
-      await weixinSetup('./out/tencent_account.json', true)
-      logger.info('[视频号] 视频号cookie刷新成功')
-    }
-    catch (error) {
-      let message = ''
-      if (error instanceof Error) {
-        message = `${error.message}\n${error.stack}`
-      }
-      else {
-        message = `${error}`
-      }
-      logger.error('[视频号] cookie刷新失败', `message:${message}`)
-    }
   })
 }
 
