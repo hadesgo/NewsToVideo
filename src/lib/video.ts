@@ -5,7 +5,7 @@ import { NewsVideoConfig } from 'src/type.ts'
 
 export const isUrl = (path: string) => /^https?:\/\//.test(path)
 
-function textBoxfunc({ width, height, fabric, params }: CustomFabricFunctionArgs): CustomFabricFunctionCallbacks {
+function landscapeTextBoxfunc({ width, height, fabric, params }: CustomFabricFunctionArgs): CustomFabricFunctionCallbacks {
   return {
     async onRender(progress, canvas) {
       canvas.backgroundColor = 'hsl(33, 100%, 50%)'
@@ -65,22 +65,22 @@ function textBoxfunc({ width, height, fabric, params }: CustomFabricFunctionArgs
       RedTopRightTriangle.top = RedTopRightParallelogram.top + RedTopRightParallelogram.height
       canvas.add(RedTopRightTriangle)
 
-      const latestTextBox = new fabric.Textbox('每日全球', { fill: 'white', fontWeight: 'bold', fontSize: 55, fontFamily: '微软雅黑' })
+      const latestTextBox = new fabric.Textbox('每日全球', { fill: 'white', fontWeight: 'bold', fontSize: 55, fontFamily: 'Microsoft Yahei UI' })
       latestTextBox.left = topRightParallelogram.left + (latestTextBox.width / 6)
       latestTextBox.top = topRightParallelogram.top + (latestTextBox.height / 7)
       canvas.add(latestTextBox)
 
-      const newsTextBox = new fabric.Textbox('热点新闻', { fill: 'white', fontWeight: 'bold', fontSize: 45, fontFamily: '微软雅黑' })
+      const newsTextBox = new fabric.Textbox('热点新闻', { fill: 'white', fontWeight: 'bold', fontSize: 45, fontFamily: 'Microsoft Yahei UI' })
       newsTextBox.left = RedTopRightParallelogram.left + (newsTextBox.width / 5)
       newsTextBox.top = RedTopRightParallelogram.top + (newsTextBox.height / 5)
       canvas.add(newsTextBox)
 
-      const newsTitle = new fabric.Textbox(params.title, { fill: '#41318E', fontWeight: 'bold', fontSize: 35, fontFamily: '微软雅黑', width: 1000 })
+      const newsTitle = new fabric.Textbox(params.title, { fill: '#41318E', fontWeight: 'bold', fontSize: 35, fontFamily: 'Microsoft Yahei UI', width: 1000 })
       newsTitle.left = 485
       newsTitle.top = 825
       canvas.add(newsTitle)
 
-      const contentTitle = new fabric.Textbox(params.content, { fill: '#41318E', fontSize: 30, fontFamily: '微软雅黑', width: 1160, splitByGrapheme: true })
+      const contentTitle = new fabric.Textbox(params.content, { fill: '#41318E', fontSize: 30, fontFamily: 'Microsoft Yahei UI', width: 1160, splitByGrapheme: true })
       contentTitle.left = 485
       contentTitle.top = 875
       canvas.add(contentTitle)
@@ -92,7 +92,7 @@ function textBoxfunc({ width, height, fabric, params }: CustomFabricFunctionArgs
   }
 }
 
-async function avatarfunc({ image, fabric }: VideoPostProcessingFunctionArgs): Promise<void> {
+async function landscapeAvatarfunc({ image, fabric }: VideoPostProcessingFunctionArgs): Promise<void> {
   const config = {
     height: 854,
     width: 854,
@@ -118,6 +118,168 @@ async function avatarfunc({ image, fabric }: VideoPostProcessingFunctionArgs): P
   image.left = 105
   image.top = 680
   image.scaleToWidth(336)
+}
+
+function portraitTextBoxfunc({ width, height, fabric, params }: CustomFabricFunctionArgs): CustomFabricFunctionCallbacks {
+  return {
+    async onRender(progress, canvas) {
+      canvas.backgroundColor = 'hsl(33, 100%, 50%)'
+
+      const bottomRect = new fabric.Rect({
+        width: 1063.17,
+        height: 444.91,
+        left: 13.58,
+        top: 1478.64,
+        fill: 'rgba(0,0,0,0.80)',
+      })
+      canvas.add(bottomRect)
+
+      const titleTextBox = new fabric.Textbox(params.title, {
+        fill: 'rgb(254, 236, 5)',
+        top: 1551.36,
+        left: 92,
+        fontSize: 75,
+        fontFamily: 'Microsoft Yahei UI',
+        width: 926,
+        splitByGrapheme: true,
+      })
+      switch (titleTextBox.textLines.length) {
+        case 2:
+          titleTextBox.set('top', 1512)
+          titleTextBox.set('fontSize', 55)
+          break
+        default:
+          break
+      }
+      canvas.add(titleTextBox)
+
+      const leftRect = new fabric.Rect({
+        width: 2561,
+        height: 17,
+        top: 0.12,
+        left: 12.75,
+        angle: 90,
+        fill: 'rgb(254, 236, 5)',
+        scaleX: 0.75,
+        scaleY: 0.75,
+      })
+      canvas.add(leftRect)
+
+      const contentTextBox = new fabric.Textbox(params.content, {
+        fill: 'rgb(255, 255, 255)',
+        top: 1672.97,
+        left: 92,
+        fontSize: 42,
+        fontFamily: 'Microsoft Yahei UI',
+        width: 978,
+        splitByGrapheme: true,
+      })
+      canvas.add(contentTextBox)
+
+      const centerRect = new fabric.Rect({
+        width: 430.33,
+        height: 143.68,
+        top: 1345.36,
+        left: 92,
+        fill: 'rgb(254, 236, 5)',
+        scaleX: 0.75,
+        scaleY: 0.75,
+      })
+      canvas.add(centerRect)
+
+      const logoTextBox = new fabric.Textbox('每日 新闻', {
+        fill: 'rgb(0, 0, 0)',
+        left: 109.58,
+        top: 1367.38,
+        fontSize: 60,
+        fontFamily: 'Microsoft Yahei UI',
+        width: 465,
+        splitByGrapheme: true,
+      })
+      canvas.add(logoTextBox)
+
+      const topRectNews = new fabric.Rect({
+        fill: 'rgb(254,236,5)',
+        width: 230.79,
+        height: 102.62,
+        top: 26.94,
+        left: 825.53,
+      })
+      canvas.add(topRectNews)
+
+      const topTextBoxNews = new fabric.Textbox('新闻', {
+        top: 32.55,
+        left: 834.79,
+        fontSize: 80,
+        fill: 'rgb(0, 0, 0)',
+        fontFamily: 'Microsoft Yahei UI',
+      })
+      topTextBoxNews.left = width - topTextBoxNews.width - 46
+      canvas.add(topTextBoxNews)
+
+      const topRectDay = new fabric.Rect({
+        width: 192.33,
+        height: 69.3,
+        top: 123.07,
+        left: 863.83,
+        fill: 'rgb(255,255,255)',
+      })
+      canvas.add(topRectDay)
+
+      const topTextBoxDay = new fabric.Textbox('每日', {
+        top: 129.74,
+        left: 885.66,
+        fontSize: 50,
+        fill: 'rgb(0, 0, 0)',
+        fontFamily: 'Microsoft Yahei UI',
+      })
+      topTextBoxDay.left = width - topTextBoxDay.width - 46
+      canvas.add(topTextBoxDay)
+    },
+
+    onClose() {
+      // Cleanup if you initialized anything
+    },
+  }
+}
+
+async function portraitAvatarfunc({ image, fabric }: VideoPostProcessingFunctionArgs): Promise<void> {
+  const config = {
+    height: 854,
+    width: 854,
+    x: 118,
+    y: -41,
+  }
+  const radius = Math.min(config.width, config.height) / 2
+  const circle = new fabric.Circle({
+    radius,
+    left: -radius,
+    top: -radius,
+    objectCaching: false,
+  })
+  image.set({
+    cropX: config.x,
+    cropY: config.y,
+    width: config.width,
+    height: config.height,
+    left: -config.width / 2,
+    top: -config.height / 2,
+    clipPath: circle,
+  })
+  image.left = 89
+  image.top = 48.05
+  image.scaleToWidth(363)
+}
+
+const fabricFuns = {
+  landscape: {
+    textBox: landscapeTextBoxfunc,
+    avatar: landscapeAvatarfunc,
+  },
+  portrait: {
+    textBox: portraitTextBoxfunc,
+    avatar: portraitAvatarfunc,
+  },
 }
 
 const genVideo = async (config: NewsVideoConfig, outPath: string) => {
@@ -155,17 +317,18 @@ const genVideo = async (config: NewsVideoConfig, outPath: string) => {
     const talkVideo = layerConfig.talkVideo
     const material = layerConfig.material
     const news = layerConfig.news
-    const clip = {
-      duration: layerConfig.duration,
-      layers: [
-        {
+    const materialLayers = []
+    switch (config.layout) {
+      case 'landscape':
+      {
+        const backgroud = {
           type: 'video',
           cutFrom: 0,
           cutTo: layerConfig.duration,
           path: './assets/backgroud_video.mp4',
           resizeMode: 'cover',
-        },
-        {
+        }
+        const materialLayer = {
           type: material.type,
           path: material.path,
           resizeMode: 'contain',
@@ -178,10 +341,34 @@ const genVideo = async (config: NewsVideoConfig, outPath: string) => {
           originY: 'bottom',
           left: 0.5,
           top: 0.735,
-        },
+        }
+        materialLayers.push(backgroud)
+        materialLayers.push(materialLayer)
+        break
+      }
+      case 'portrait':
+      {
+        const materialLayer = {
+          type: material.type,
+          path: material.path,
+          resizeMode: 'cover',
+          mixVolume: 0,
+          cutFrom: 0,
+          cutTo: layerConfig.duration,
+        }
+        materialLayers.push(materialLayer)
+        break
+      }
+      default:
+        break
+    }
+    const clip = {
+      duration: layerConfig.duration,
+      layers: [
+        ...materialLayers,
         {
           type: 'fabric',
-          func: textBoxfunc,
+          func: fabricFuns[config.layout].textBox,
           title: news.title,
           content: news.content,
         },
@@ -191,7 +378,7 @@ const genVideo = async (config: NewsVideoConfig, outPath: string) => {
           cutTo: layerConfig.duration,
           resizeMode: 'contain',
           path: talkVideo.path,
-          fabricImagePostProcessing: avatarfunc,
+          fabricImagePostProcessing: fabricFuns[config.layout].avatar,
         },
       ],
     }

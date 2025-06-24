@@ -19,7 +19,7 @@ import logger from './lib/logger.ts'
 import { sendMail } from './lib/email.ts'
 import { TencentVideo, weixinSetup } from './lib/tencent.ts'
 
-const videoLayouts = ['landscape']
+const videoLayouts = ['portrait']
 
 function formatTime(date: Date): string[] {
   const year = date.getFullYear()
