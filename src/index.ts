@@ -145,7 +145,7 @@ const genNewsVideoAndUpload = async () => {
     await genVideo(videoConfig, videoPath)
     logger.info(`[main] 视频生成成功`)
 
-    const douyinVideo = new DouYinVideo(videoName, videoPath, ['热点', '热点新闻事件'], './assets/thumbnail.png', './out/douyin_account.json')
+    const douyinVideo = new DouYinVideo(videoName, videoPath, ['热点', '热点新闻事件'], `./assets/thumbnail-${layout}.png`, './out/douyin_account.json')
     await douyinVideo.upload()
     logger.info(`[main] 抖音上传成功`)
 
