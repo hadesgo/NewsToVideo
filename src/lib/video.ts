@@ -134,23 +134,13 @@ function portraitTextBoxfunc({ width, height, fabric, params }: CustomFabricFunc
 
       const titleTextBox = new fabric.Textbox(params.title, {
         fill: 'rgb(254, 236, 5)',
-        top: 1551.36,
+        top: 1505,
         left: 92,
-        fontSize: 75,
+        fontSize: 70,
         fontFamily: 'Microsoft Yahei UI',
         width: 926,
         splitByGrapheme: true,
       })
-      switch (titleTextBox.textLines.length) {
-        case 2:
-        {
-          titleTextBox.set('top', 1512)
-          titleTextBox.set('fontSize', 55)
-          break
-        }
-        default:
-          break
-      }
       canvas.add(titleTextBox)
 
       const leftRect = new fabric.Rect({
