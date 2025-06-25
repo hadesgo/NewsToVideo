@@ -94,10 +94,10 @@ function landscapeTextBoxfunc({ width, height, fabric, params }: CustomFabricFun
 
 async function landscapeAvatarfunc({ image, fabric }: VideoPostProcessingFunctionArgs): Promise<void> {
   const config = {
-    height: 854,
-    width: 854,
-    x: 118,
-    y: -41,
+    height: 772,
+    width: 772,
+    x: 159,
+    y: 0,
   }
   const radius = Math.min(config.width, config.height) / 2
   const circle = new fabric.Circle({
@@ -123,10 +123,8 @@ async function landscapeAvatarfunc({ image, fabric }: VideoPostProcessingFunctio
 function portraitTextBoxfunc({ width, height, fabric, params }: CustomFabricFunctionArgs): CustomFabricFunctionCallbacks {
   return {
     async onRender(progress, canvas) {
-      canvas.backgroundColor = 'hsl(33, 100%, 50%)'
-
       const bottomRect = new fabric.Rect({
-        width: 1063.17,
+        width: 1066.42,
         height: 444.91,
         left: 13.58,
         top: 1478.64,
@@ -145,9 +143,11 @@ function portraitTextBoxfunc({ width, height, fabric, params }: CustomFabricFunc
       })
       switch (titleTextBox.textLines.length) {
         case 2:
+        {
           titleTextBox.set('top', 1512)
           titleTextBox.set('fontSize', 55)
           break
+        }
         default:
           break
       }
@@ -168,13 +168,24 @@ function portraitTextBoxfunc({ width, height, fabric, params }: CustomFabricFunc
       const contentTextBox = new fabric.Textbox(params.content, {
         fill: 'rgb(255, 255, 255)',
         top: 1672.97,
-        left: 92,
         fontSize: 42,
         fontFamily: 'Microsoft Yahei UI',
-        width: 978,
+        width: 896,
         splitByGrapheme: true,
       })
+      contentTextBox.left = titleTextBox.left
+      contentTextBox.top = titleTextBox.top + titleTextBox.height + 20
       canvas.add(contentTextBox)
+
+      let topDifference = 0
+      if ((contentTextBox.top + contentTextBox.height + 20) > height) {
+        topDifference = contentTextBox.top + contentTextBox.height + 20 - height
+      }
+
+      contentTextBox.top -= topDifference
+      titleTextBox.top -= topDifference
+      bottomRect.top -= topDifference
+      bottomRect.height += topDifference
 
       const centerRect = new fabric.Rect({
         width: 430.33,
@@ -185,17 +196,19 @@ function portraitTextBoxfunc({ width, height, fabric, params }: CustomFabricFunc
         scaleX: 0.75,
         scaleY: 0.75,
       })
+      centerRect.top -= topDifference
       canvas.add(centerRect)
 
       const logoTextBox = new fabric.Textbox('每日 新闻', {
         fill: 'rgb(0, 0, 0)',
-        left: 109.58,
+        left: 119.58,
         top: 1367.38,
         fontSize: 60,
         fontFamily: 'Microsoft Yahei UI',
         width: 465,
         splitByGrapheme: true,
       })
+      logoTextBox.top -= topDifference
       canvas.add(logoTextBox)
 
       const topRectNews = new fabric.Rect({
@@ -245,10 +258,10 @@ function portraitTextBoxfunc({ width, height, fabric, params }: CustomFabricFunc
 
 async function portraitAvatarfunc({ image, fabric }: VideoPostProcessingFunctionArgs): Promise<void> {
   const config = {
-    height: 854,
-    width: 854,
-    x: 118,
-    y: -41,
+    height: 772,
+    width: 772,
+    x: 159,
+    y: 0,
   }
   const radius = Math.min(config.width, config.height) / 2
   const circle = new fabric.Circle({
