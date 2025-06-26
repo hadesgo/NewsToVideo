@@ -211,13 +211,13 @@ export class DouYinVideo {
   async setThumbnail(page: Page, thumbnailPath: string) {
     if (thumbnailPath) {
       await page.click('text="选择封面"')
-      await page.waitForSelector('div.semi-modal-content:visible')
+      await page.waitForSelector('div[class*=\'modal\']:visible', { timeout: 60000 })
       await page.click('text="设置竖封面"')
       await page.waitForTimeout(2000) // 等待2秒
       // 定位到上传区域并点击
       await page.locator('div[class^=\'semi-upload upload\'] >> input.semi-upload-hidden-input').setInputFiles(thumbnailPath)
       await page.waitForTimeout(2000) // 等待2秒
-      await page.locator('div[class^=\'extractFooter\'] button:visible:has-text(\'完成\')').click()
+      await page.locator('button:visible:has-text(\'完成\')').click()
     }
   }
 }
