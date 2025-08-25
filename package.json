@@ -4,8 +4,18 @@
   "description": "将全球热点新闻转化为视频",
   "main": "src/index.ts",
   "scripts": {
-    "start": "tsx  ./src/index.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "tsx ./src/index.ts",
+    "dev": "tsx watch ./src/index.ts",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest --watch",
+    "test:ui": "vitest --ui",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "type-check": "tsc --noEmit",
+    "build": "tsc",
+    "clean": "rimraf dist coverage"
   },
   "author": "LYS <lys219911@gmail.com>",
   "license": "NONE",
@@ -16,10 +26,14 @@
     "@stylistic/eslint-plugin": "^2.10.0",
     "@types/node": "^22.15.2",
     "@types/nodemailer": "^6.4.17",
+    "@vitest/coverage-v8": "^2.1.5",
+    "@vitest/ui": "^2.1.5",
     "eslint": "^9.16.0",
     "globals": "^15.13.0",
+    "rimraf": "^6.0.1",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.17.0"
+    "typescript-eslint": "^8.17.0",
+    "vitest": "^2.1.5"
   },
   "dependencies": {
     "axios": "^1.9.0",

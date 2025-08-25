@@ -43,17 +43,12 @@ keywords: xxx
 1 以 json格式输出，格式为 [{"title":"标题1", "content":"内容1", "keywords":"xxx"}, ...]。
 ###` },
     ],
-    enable_search: true, // 开启联网搜索的参数
-    search_options: {
-      forced_search: true, // 强制联网搜索的参数
-      search_strategy: 'pro',
-    },
     response_format: {
       type: 'json_object',
     },
     temperature: 0,
     presence_penalty: 0,
-  })
+  } as any)
   const content = completion.choices[0].message.content
   return content
     ? JSON.parse(content)

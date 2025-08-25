@@ -1,193 +1,203 @@
-import fs from 'fs'
-import path from 'path'
-import { AxiosError } from 'axios'
-import cron, { TaskContext } from 'node-cron'
-import stringify from 'safe-stable-stringify'
 import 'dotenv/config'
-
-import { NewsVideoConfig, LayoutType } from './type.ts'
-import news from './lib/news.ts'
-import tts from './lib/tts.ts'
-import genImage from './material/image.ts'
-import genVideo from './lib/video.ts'
-import { getVideoDurationInSeconds } from './utils/ffmpeg.ts'
-import getVideo from './material/video.ts'
-import { saveConfig, genTalkVideo } from './utils/utils.ts'
-import { DouYinVideo } from './lib/douyin.ts'
-import { BilibiliVideo } from './lib/bilibili.ts'
 import logger from './lib/logger.ts'
 import { sendMail } from './lib/email.ts'
-import { TencentVideo } from './lib/tencent.ts'
+import configManager from './config/index.ts'
+import taskScheduler from './core/TaskScheduler.ts'
+import NewsProcessor from './core/NewsProcessor.ts'
+import VideoGenerator from './core/VideoGenerator.ts'
+import PlatformUploadManager from './core/PlatformUploadManager.ts'
+import ErrorHandler, { ErrorType } from './core/ErrorHandler.ts'
 
-const videoLayouts = ['portrait']
-
-function formatTime(date: Date): string[] {
-  const year = date.getFullYear()
-  const month = (date.getMonth() + 1).toString().padStart(2, '0')
-  const day = date.getDate().toString().padStart(2, '0')
-  return [`${year}-${month}-${day}`, `${year}年${month}月${day}日`]
+/**
+ * 主要业务流程：生成新闻视频并上传
+ */
+async function generateNewsVideoAndUpload(): Promise<void> {
+  logger.info('Starting news video generation and upload process')
+  
+  let newsProcessor: NewsProcessor | undefined
+  let uploadManager: PlatformUploadManager | undefined
+  
+  try {
+    // 1. 初始化处理器
+    newsProcessor = new NewsProcessor()
+    uploadManager = new PlatformUploadManager()
+    
+    // 2. 验证上传前置条件
+    const prerequisites = await uploadManager.validatePrerequisites()
+    if (!prerequisites.valid) {
+      throw new Error(`Upload prerequisites not met: ${prerequisites.issues.join(', ')}`)
+    }
+    
+    // 3. 处理新闻并生成配置
+    logger.info('Processing news and generating configurations')
+    const { newsList, configs } = await newsProcessor.processAllNews((step, progress, total) => {
+      logger.info(`News processing: ${step} (${progress}/${total})`)
+    })
+    
+    const videoName = newsProcessor.getVideoName()
+    const outputDir = newsProcessor.getOutputDir()
+    
+    // 4. 为每种布局生成视频并上传
+    const layouts = configManager.getVideoConfig().layouts
+    
+    for (const layout of layouts) {
+      const config = configs.get(layout)
+      if (!config) {
+        logger.warn(`No configuration found for layout: ${layout}`)
+        continue
+      }
+      
+      logger.info(`Generating video for layout: ${layout}`)
+      
+      // 生成视频
+      const videoPath = `${outputDir}/${layout}/${videoName}.mp4`
+      const videoGenerator = new VideoGenerator(config, videoPath)
+      
+      const result = await videoGenerator.generateVideo((step, progress) => {
+        logger.info(`Video generation (${layout}): ${step} (${progress}%)`)
+      })
+      
+      if (!result.success) {
+        throw new Error(`Video generation failed for layout: ${layout}`)
+      }
+      
+      logger.info(`Video generated successfully: ${videoPath} (${result.fileSize} bytes)`)
+      
+      // 创建上传选项
+      const uploadOptions = uploadManager.createUploadOptions(videoName, layout)
+      
+      // 上传到所有平台
+      logger.info(`Uploading video to all platforms: ${layout}`)
+      const uploadResults = await uploadManager.uploadToAllPlatforms(
+        videoPath,
+        uploadOptions,
+        (platform, progress, message) => {
+          logger.info(`Upload progress (${platform}): ${message} (${progress}%)`)
+        }
+      )
+      
+      // 记录上传结果
+      for (const uploadResult of uploadResults) {
+        if (uploadResult.success) {
+          logger.info(`Successfully uploaded to ${uploadResult.platform}`)
+        } else {
+          logger.error(`Failed to upload to ${uploadResult.platform}: ${uploadResult.error}`)
+        }
+      }
+      
+      // 检查是否所有上传都成功
+      const failedUploads = uploadResults.filter(r => !r.success)
+      if (failedUploads.length > 0) {
+        const failedPlatforms = failedUploads.map(r => r.platform).join(', ')
+        logger.warn(`Some uploads failed for layout ${layout}: ${failedPlatforms}`)
+      }
+      
+      // 清理视频生成器
+      await videoGenerator.cleanup()
+    }
+    
+    logger.info('News video generation and upload process completed successfully')
+    
+    // 发送成功通知
+    await sendMail(
+      '🥳视频发布成功', 
+      `视频发布成功！\n\n处理的新闻数量: ${newsList.length}\n生成的布局: ${layouts.join(', ')}\n\n🎉🎉🎉🎉🎉🎉`
+    )
+    
+  } catch (error) {
+    logger.error(`News video generation and upload failed: ${error}`)
+    
+    // 使用统一的错误处理
+    await ErrorHandler.handle(
+      error,
+      ErrorHandler.createContext('main-process', 'generate-and-upload'),
+      { maxAttempts: 1 } // 主流程不重试
+    )
+    
+    // 发送失败通知
+    let errorMessage = ''
+    if (error instanceof Error) {
+      errorMessage = `${error.message}\n${error.stack}`
+    } else {
+      errorMessage = String(error)
+    }
+    
+    await sendMail(
+      '😢视频发布失败',
+      `视频发布失败！\n\n错误信息:\n${errorMessage}`
+    )
+    
+    throw error
+  } finally {
+    // 清理资源
+    if (newsProcessor) {
+      await newsProcessor.cleanup()
+    }
+    if (uploadManager) {
+      await uploadManager.cleanup()
+    }
+  }
 }
 
-const genNewsVideoAndUpload = async () => {
-  const formatTodays = formatTime(new Date())
-  const today = formatTodays[0]
-  const videoName = `每日全球热点新闻资讯-${formatTodays[1]}`
-
-  const todayDir = `./out/${today}`
-  fs.mkdirSync(todayDir, { recursive: true })
-
-  const aduioDir = path.join(todayDir, 'audio')
-  fs.mkdirSync(aduioDir, { recursive: true })
-
-  const talkVideolDir = path.join(todayDir, 'talk-video')
-  fs.mkdirSync(talkVideolDir, { recursive: true })
-
-  const newsJsonFilePath = path.join(todayDir, 'news.json')
-  let newsList = []
-  if (fs.existsSync(newsJsonFilePath)) {
-    newsList = JSON.parse(fs.readFileSync(newsJsonFilePath, 'utf-8'))
-  }
-  else {
-    newsList = await news(formatTodays[1])
-    fs.writeFileSync(newsJsonFilePath, JSON.stringify(newsList))
-  }
-  logger.info(`[main] 获取到 ${newsList.length} 条新闻`)
-
-  for (let i = 0; i < videoLayouts.length; i++) {
-    const layout = videoLayouts[i]
-    let width = 0
-    let height = 0
-    switch (layout) {
-      case 'landscape':
+/**
+ * 应用程序入口
+ */
+async function main(): Promise<void> {
+  try {
+    // 验证配置
+    if (!configManager.isConfigured()) {
+      throw new Error('Application configuration is invalid. Please check your .env file.')
+    }
+    
+    logger.info('NewsToVideo application starting')
+    logger.info(`Configuration loaded: ${JSON.stringify({
+      platforms: configManager.getPlatformConfig(),
+      videoLayouts: configManager.getVideoConfig().layouts,
+      cronSchedule: configManager.getAppConfig().cronSchedule,
+    }, null, 2)}`)
+    
+    // 注册主要任务
+    taskScheduler.registerTask(
       {
-        width = 1920
-        height = 1080
-        break
-      }
-      case 'portrait':
-      {
-        width = 1080
-        height = 1920
-        break
-      }
-      default:
-        break
-    }
-
-    let videoConfig: NewsVideoConfig = { layers: [], layout: layout as LayoutType }
-    if (fs.existsSync(path.join(todayDir, layout, 'config.json'))) {
-      videoConfig = JSON.parse(fs.readFileSync(path.join(todayDir, layout, 'config.json'), 'utf-8'))
-    }
-
-    const materialDir = path.join(todayDir, layout, 'materia')
-    fs.mkdirSync(materialDir, { recursive: true })
-
-    const configPath = path.join(todayDir, layout, 'config.json')
-
-    for (let j = 0; j < newsList.length; j++) {
-      let layer = {} as NewsVideoConfig['layers'][number]
-      if (videoConfig.layers.length > j) {
-        layer = videoConfig.layers[j]
-      }
-      else {
-        videoConfig.layers.push(layer)
-      }
-
-      // 生成视频配置
-      const news = newsList[j]
-      layer.news = { title: news.title, content: news.content, keywodrs: news.keywords }
-      saveConfig(videoConfig, configPath)
-
-      // 生成音频
-      const audioPath = path.join(aduioDir, `${j}.mp3`)
-      const subtitleFilePath = path.join(aduioDir, `${j}.json`)
-      if (layer?.audio?.path == null) {
-        const audioInfo = await tts(news.content, audioPath)
-        if (audioInfo.subtitles) {
-          fs.writeFileSync(subtitleFilePath, JSON.stringify(audioInfo.subtitles))
-        }
-        layer.audio = { path: audioInfo.audio, subtitles: audioInfo.subtitles }
-        layer.duration = await getVideoDurationInSeconds(audioInfo.audio)
-      }
-      logger.info(`[main] 音频 ${j} 生成完成, 进度: ${j + 1}/${newsList.length}`)
-      saveConfig(videoConfig, configPath)
-
-      // 下载视频素材
-      if (layer?.material?.path == null) {
-        const videoPath = await getVideo(news.keywords, layout, layer.duration, materialDir, j)
-        if (videoPath) {
-          layer.material = { path: videoPath, type: 'video' }
-          logger.info(`[main] video ${j} 生成完成, 进度: ${j + 1}/${newsList.length}`)
-        }
-        else {
-          // 生成图片
-          const imagePath = path.join(materialDir, `${j}.png`)
-          if (!fs.existsSync(imagePath)) {
-            await genImage(news.keywords, `${width}x${height}`, imagePath)
-          }
-          layer.material = { path: imagePath, type: 'image' }
-          logger.info(`[main] image ${j} 生成完成, 进度: ${j + 1}/${newsList.length}`)
-        }
-      }
-      else {
-        logger.info(`[main] ${layer.material.type} ${j} 生成完成, 进度: ${j + 1}/${newsList.length}`)
-      }
-      saveConfig(videoConfig, configPath)
-    }
-    for (let k = 0; k < videoConfig.layers.length; k++) {
-      const layer = videoConfig.layers[k]
-      const talkVideoPath = path.join(talkVideolDir, `${k}.mp4`)
-      await genTalkVideo(layer.audio.path, talkVideoPath, today, k)
-      layer.talkVideo = { path: talkVideoPath }
-      saveConfig(videoConfig, configPath)
-    }
-    const videoPath = `./out/${today}/${layout}/${videoName}.mp4`
-    await genVideo(videoConfig, videoPath)
-    logger.info(`[main] 视频生成成功`)
-
-    const douyinVideo = new DouYinVideo(videoName, videoPath, ['热点', '热点新闻事件'], `./assets/thumbnail-${layout}.png`, './out/douyin_account.json')
-    await douyinVideo.upload()
-    logger.info(`[main] 抖音上传成功`)
-
-    const bilibiliVideo = new BilibiliVideo(videoName, videoPath, ['热点', '资讯', '全球'], './out/bilibili_account.json')
-    await bilibiliVideo.upload()
-    logger.info(`[main] B站上传成功`)
-
-    const tencentVideo = new TencentVideo(videoName, videoPath, ['热点', '资讯', '全球'], './out/tencent_account.json', '新闻资讯')
-    await tencentVideo.upload()
-    logger.info(`[main] 视频号上传成功`)
+        id: 'news-video-generation',
+        name: 'News Video Generation and Upload',
+        description: 'Generate news videos and upload to all configured platforms',
+        cronExpression: configManager.getAppConfig().cronSchedule,
+        timezone: configManager.getAppConfig().timezone,
+        enabled: true,
+        maxRetries: 1, // 主任务不重试，内部模块会处理重试
+        timeout: 30 * 60 * 1000, // 30分钟超时
+      },
+      generateNewsVideoAndUpload
+    )
+    
+    // 启动所有任务
+    taskScheduler.startAllTasks()
+    
+    logger.info('NewsToVideo application started successfully')
+    logger.info(`Next execution scheduled: ${configManager.getAppConfig().cronSchedule}`)
+    
+    // 保持应用运行
+    process.on('SIGINT', async () => {
+      logger.info('Received SIGINT, shutting down gracefully')
+      taskScheduler.stopAllTasks()
+      process.exit(0)
+    })
+    
+    process.on('SIGTERM', async () => {
+      logger.info('Received SIGTERM, shutting down gracefully')
+      taskScheduler.stopAllTasks()
+      process.exit(0)
+    })
+    
+  } catch (error) {
+    logger.error(`Application startup failed: ${error}`)
+    process.exit(1)
   }
 }
 
-const main = async () => {
-  cron.schedule('0 17 * * *', async (ctx: TaskContext) => {
-    console.log(`Task started at ${ctx.triggeredAt.toISOString()}`)
-    console.log(`Scheduled for: ${ctx.dateLocalIso}`)
-    try {
-      await genNewsVideoAndUpload()
-      await sendMail('🥳视频发布成功', '视频发布成功！！！🎉🎉🎉🎉🎉🎉')
-    }
-    catch (error) {
-      let message = ''
-      if (error instanceof AxiosError) {
-        if (error.response) {
-          message = `url: ${error.response.config.url}, code: ${error.code}, status: ${error.response.status}, data: ${error.response.data ? stringify(error.response.data) : ''}`
-        }
-        else {
-          message = `url: ${error?.config?.url}, code: ${error.code}, cause: ${error.cause ? stringify(error.cause) : ''}`
-        }
-      }
-      else if (error instanceof Error) {
-        message = `${error.message}\n${error.stack}`
-      }
-      else {
-        message = `${error}`
-      }
-      await sendMail('😢视频发布失败', `message:${message}`)
-    }
-
-    console.log(`Task status ${await ctx?.task?.getStatus()}`)
-  })
-}
-
-main()
+// 启动应用
+main().catch(error => {
+  console.error('Fatal error:', error)
+  process.exit(1)
+})
