@@ -75,7 +75,7 @@ async function extractNews(prompt: string | undefined) {
     return [];
   }
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-pro",
+    model: "gemini-2.5-flash",
     contents: prompt,
     config: {
       systemInstruction: `###
@@ -92,21 +92,21 @@ async function extractNews(prompt: string | undefined) {
 示例1：
 title:某国举行关键选举
 content:某国举行在某年某日举行关键选举，有重要人物出席参会，并且投票率投票。投票结果将在几天后公布。
-keywords:election
+keywords:[election]
 
 示例2：
 title:某赛事举办
 content:某赛事在某年某日举办，吸引了来自世界各地的运动员参赛。赛事期间，各国运动员展现出高水平的竞技状态，比赛气氛热烈。
-keywords:Events
+keywords:[Events]
 
 请回答问题：
 title:xxxx
 content:xxxxxxxxx
-keywords: xxx
+keywords: [xxx]
 输出：
 
 要求：
-1 以 json格式输出，格式为 [{"title":"标题1", "content":"内容1", "keywords":"xxx"}, ...]。
+1 以 json格式输出，格式为 [{"title":"标题1", "content":"内容1", "keywords":["xxx"]}, ...]。
 ###`,
       responseMimeType: "application/json",
       responseJsonSchema: {
@@ -121,7 +121,10 @@ keywords: xxx
               type: "string",
             },
             keywords: {
-              type: "string",
+              type: "array",
+              items: {
+                type: "string",
+              },
             },
           },
           required: ["title", "content", "keywords"],

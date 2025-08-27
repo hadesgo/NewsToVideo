@@ -12,7 +12,7 @@ const tts = async (text: string, outputPath: string) => {
   while (retryCount < MAX_RETRY_COUNT) {
     try {
       await edgeTTS.synthesize(text, "zh-CN-XiaoxiaoMultilingualNeural");
-      edgeTTS.toFile(outputPath);
+      edgeTTS.toFile(outputPath.replace(".mp3", ""));
       await addSilence(outputPath, 0.3);
       return {
         audio: outputPath,

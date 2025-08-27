@@ -193,7 +193,7 @@ async function main(): Promise<void> {
         timezone: configManager.getAppConfig().timezone,
         enabled: true,
         maxRetries: 1, // 主任务不重试，内部模块会处理重试
-        timeout: 30 * 60 * 1000, // 30分钟超时
+        timeout: 120 * 60 * 1000, // 120分钟超时
       },
       generateNewsVideoAndUpload
     );

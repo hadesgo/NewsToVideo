@@ -14,7 +14,8 @@ export interface VideoGenerationOptions {
   quality?: "high" | "medium" | "low";
   fps?: number;
   enableAudio?: boolean;
-  enableSubtitles?: boolean;
+  // TODO: 字幕没有实现
+  //enableSubtitles?: boolean;
 }
 
 /**
@@ -60,7 +61,6 @@ export class VideoGenerator {
       quality: "high",
       fps: configManager.getVideoConfig().fps,
       enableAudio: true,
-      enableSubtitles: true,
       ...options,
     };
 
@@ -398,7 +398,6 @@ export class VideoGenerator {
   ): VideoGenerationOptions {
     const baseSettings: VideoGenerationOptions = {
       enableAudio: true,
-      enableSubtitles: true,
     };
 
     switch (layout) {

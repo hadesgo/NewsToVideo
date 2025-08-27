@@ -8,7 +8,7 @@ export interface AppConfig {
   api: {
     geminiApiKey: string;
     pexelsApiKey: string;
-    siliconFlowApiKey: string;
+    modelScopeApiKey: string;
   };
   email: {
     googelAppPassword: string;
@@ -62,7 +62,7 @@ class ConfigManager {
       api: {
         geminiApiKey: process.env.GEMINI_API_KEY || "",
         pexelsApiKey: process.env.PEXELS_API_KEY || "",
-        siliconFlowApiKey: process.env.SILICONFLOW_API_KEY || "",
+        modelScopeApiKey: process.env.MODELSCOPE_API_KEY || "",
       },
       email: {
         googelAppPassword: process.env.GOOGLE_APP_PASSWORD || "",
@@ -104,8 +104,8 @@ class ConfigManager {
     if (!api.pexelsApiKey) {
       throw new ConfigValidationError("PEXELS_API_KEY is required");
     }
-    if (!api.siliconFlowApiKey) {
-      throw new ConfigValidationError("SILICONFLOW_API_KEY is required");
+    if (!api.modelScopeApiKey) {
+      throw new ConfigValidationError("MODELSCOPE_API_KEY is required");
     }
 
     // 验证邮件配置
