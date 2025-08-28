@@ -1,8 +1,9 @@
 import fs from "fs";
 import logger from "../lib/logger.ts";
-import { DouYinVideo } from "../lib/douyin.ts";
-import { BilibiliVideo } from "../lib/bilibili.ts";
-import { TencentVideo } from "../lib/tencent.ts";
+import { DouYinVideo } from "../lib/uploader/douyin.ts";
+import { BilibiliVideo } from "../lib/uploader/bilibili.ts";
+import { TencentVideo } from "../lib/uploader/tencent.ts";
+import { YoutubeVideo } from "../lib/uploader/youtube.ts";
 import ErrorHandler, { AppError, ErrorType } from "./ErrorHandler.ts";
 import configManager from "../config/index.ts";
 import { LayoutType } from "../type.ts";
@@ -14,6 +15,7 @@ export enum PlatformType {
   DOUYIN = "douyin",
   BILIBILI = "bilibili",
   TENCENT = "tencent",
+  YOUTUBE = "youtube",
 }
 
 /**
@@ -327,6 +329,67 @@ class TencentUploader extends BasePlatformUploader {
 }
 
 /**
+ * Youtube上传器
+ */
+class YoutubeUploader extends BasePlatformUploader {
+  constructor(config: PlatformConfig) {
+    super(PlatformType.YOUTUBE, config);
+  }
+
+  async upload(
+    videoPath: string,
+    options: UploadOptions,
+    progressCallback?: UploadProgressCallback
+  ): Promise<UploadResult> {
+    const startTime = new Date();
+
+    try {
+      this.validateConfig();
+      this.validateVideoFile(videoPath);
+
+      progressCallback?.(this.platform, 0, "Preparing upload to YouTube Video");
+
+      const youtubeVideo = new YoutubeVideo(
+        options.title,
+        videoPath,
+        options.tags,
+        this.config.accountFile || "./out/youtube_account.json",
+        "./assets/client_secret.json"
+      );
+
+      progressCallback?.(this.platform, 30, "Uploading to Tencent Video");
+
+      await youtubeVideo.upload();
+
+      progressCallback?.(
+        this.platform,
+        100,
+        "Upload to Tencent Video completed"
+      );
+
+      return this.createResult(
+        true,
+        "Upload to YouTube Video successful",
+        startTime
+      );
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      logger.error(`YouTube Video upload failed: ${errorMessage}`);
+
+      return this.createResult(
+        false,
+        "Upload to YouTube Video failed",
+        startTime,
+        undefined,
+        undefined,
+        errorMessage
+      );
+    }
+  }
+}
+
+/**
  * 平台上传管理器
  */
 export class PlatformUploadManager {
@@ -383,6 +446,18 @@ export class PlatformUploadManager {
           tags: ["热点", "资讯", "全球"],
           accountFile: "./out/tencent_account.json",
           category: "新闻资讯",
+        })
+      );
+    }
+
+    // Youtube上传器
+    if (platformConfig.youtubeEnabled) {
+      this.uploaders.set(
+        PlatformType.YOUTUBE,
+        new YoutubeUploader({
+          enabled: platformConfig.youtubeEnabled,
+          tags: ["Hotspot", "Information", "Global"],
+          accountFile: "./out/youtube_account.json",
         })
       );
     }

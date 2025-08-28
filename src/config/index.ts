@@ -24,6 +24,7 @@ export interface AppConfig {
     douyinEnabled: boolean;
     bilibiliEnabled: boolean;
     tencentVideoEnabled: boolean;
+    youtubeEnabled: boolean;
   };
   video: {
     layouts: LayoutType[];
@@ -79,6 +80,7 @@ class ConfigManager {
         douyinEnabled: process.env.DOUYIN_ENABLED !== "false",
         bilibiliEnabled: process.env.BILIBILI_ENABLED !== "false",
         tencentVideoEnabled: process.env.TENCENT_VIDEO_ENABLED !== "false",
+        youtubeEnabled: process.env.YOUTUBE_ENABLED !== "false",
       },
       video: {
         layouts: (process.env.VIDEO_LAYOUTS?.split(",") as LayoutType[]) || [

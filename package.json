@@ -43,6 +43,7 @@
     "editly": "^0.15.0-rc.1",
     "execa": "^9.5.2",
     "fabric": "^6.6.4",
+    "googleapis": "^159.0.0",
     "mime": "^4.0.7",
     "node-cron": "^4.0.5",
     "nodemailer": "^7.0.3",

@@ -1,7 +1,7 @@
 import { chromium, Page } from "playwright";
 import fs from "fs";
 
-import logger from "./logger.ts";
+import logger from "../logger.ts";
 import { setInitScript } from "src/utils/utils.ts";
 import { sleep } from "src/utils/utils.ts";
 

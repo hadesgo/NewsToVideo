@@ -2,7 +2,7 @@ import { chromium, Page } from "playwright";
 import fs from "node:fs";
 
 import { sleep, setInitScript } from "src/utils/utils.ts";
-import logger from "./logger.ts";
+import logger from "../logger.ts";
 
 const cookieAuth = async (accountFile: string) => {
   const browser = await chromium.launch({ headless: true });
