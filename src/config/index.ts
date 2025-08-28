@@ -25,6 +25,7 @@ export interface AppConfig {
     bilibiliEnabled: boolean;
     tencentVideoEnabled: boolean;
     youtubeEnabled: boolean;
+    tiktokEnabled: boolean;
   };
   video: {
     layouts: LayoutType[];
@@ -81,6 +82,7 @@ class ConfigManager {
         bilibiliEnabled: process.env.BILIBILI_ENABLED !== "false",
         tencentVideoEnabled: process.env.TENCENT_VIDEO_ENABLED !== "false",
         youtubeEnabled: process.env.YOUTUBE_ENABLED !== "false",
+        tiktokEnabled: process.env.TIKTOK_ENABLED !== "false",
       },
       video: {
         layouts: (process.env.VIDEO_LAYOUTS?.split(",") as LayoutType[]) || [

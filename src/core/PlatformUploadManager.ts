@@ -4,6 +4,7 @@ import { DouYinVideo } from "../lib/uploader/douyin.ts";
 import { BilibiliVideo } from "../lib/uploader/bilibili.ts";
 import { TencentVideo } from "../lib/uploader/tencent.ts";
 import { YoutubeVideo } from "../lib/uploader/youtube.ts";
+import { TikTokVideo } from "../lib/uploader/tiktok.ts";
 import ErrorHandler, { AppError, ErrorType } from "./ErrorHandler.ts";
 import configManager from "../config/index.ts";
 import { LayoutType } from "../type.ts";
@@ -16,6 +17,7 @@ export enum PlatformType {
   BILIBILI = "bilibili",
   TENCENT = "tencent",
   YOUTUBE = "youtube",
+  TIKTOK = "tiktok",
 }
 
 /**
@@ -357,14 +359,14 @@ class YoutubeUploader extends BasePlatformUploader {
         "./assets/client_secret.json"
       );
 
-      progressCallback?.(this.platform, 30, "Uploading to Tencent Video");
+      progressCallback?.(this.platform, 30, "Uploading to YouTube Video");
 
       await youtubeVideo.upload();
 
       progressCallback?.(
         this.platform,
         100,
-        "Upload to Tencent Video completed"
+        "Upload to YouTube Video completed"
       );
 
       return this.createResult(
@@ -380,6 +382,61 @@ class YoutubeUploader extends BasePlatformUploader {
       return this.createResult(
         false,
         "Upload to YouTube Video failed",
+        startTime,
+        undefined,
+        undefined,
+        errorMessage
+      );
+    }
+  }
+}
+
+/**
+ * 抖音上传器
+ */
+class TiktokUploader extends BasePlatformUploader {
+  constructor(config: PlatformConfig) {
+    super(PlatformType.TIKTOK, config);
+  }
+
+  async upload(
+    videoPath: string,
+    options: UploadOptions,
+    progressCallback?: UploadProgressCallback
+  ): Promise<UploadResult> {
+    const startTime = new Date();
+
+    try {
+      this.validateConfig();
+      this.validateVideoFile(videoPath);
+
+      progressCallback?.(this.platform, 0, "Preparing upload to Douyin");
+
+      const tiktokVideo = new TikTokVideo(
+        options.title,
+        videoPath,
+        options.tags,
+        options.thumbnail ||
+          this.config.thumbnail ||
+          `./assets/thumbnail-portrait.png`,
+        this.config.accountFile || "./out/tiktok_account.json"
+      );
+
+      progressCallback?.(this.platform, 30, "Uploading to TikTok");
+
+      await tiktokVideo.upload();
+
+      progressCallback?.(this.platform, 100, "Upload to TikTok completed");
+
+      return this.createResult(true, "Upload to TikTok successful", startTime);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      logger.error(`TikTok upload failed: ${errorMessage}`);
+
+      return this.createResult(
+        false,
+        "Upload to TikTok failed",
         startTime,
         undefined,
         undefined,
@@ -458,6 +515,19 @@ export class PlatformUploadManager {
           enabled: platformConfig.youtubeEnabled,
           tags: ["Hotspot", "Information", "Global"],
           accountFile: "./out/youtube_account.json",
+        })
+      );
+    }
+
+    // 抖音上传器
+    if (platformConfig.tiktokEnabled) {
+      this.uploaders.set(
+        PlatformType.TIKTOK,
+        new TiktokUploader({
+          enabled: platformConfig.tiktokEnabled,
+          tags: ["热点", "热点新闻事件"],
+          thumbnail: "./assets/thumbnail-portrait.png",
+          accountFile: "./out/tiktok_account.json",
         })
       );
     }
