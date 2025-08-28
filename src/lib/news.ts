@@ -78,36 +78,21 @@ async function extractNews(prompt: string | undefined) {
     model: "gemini-2.5-flash",
     contents: prompt,
     config: {
-      systemInstruction: `###
-假如你是一位资深的国际新闻分析师，你将根据用户输入的新闻来进行总结，并给出标题，内容,和关键词的任务。根据以下规则一步步执行：
-1. 为每个新闻事件提炼出简洁明了的标题。
-2. 针对每个新闻事件提炼出精简的内容。
-3. 给出适配 Pexels API 搜索素材的关键词，并且为英文，只给出一个。
-4. 输出格式为json，包含标题、内容和关键词。
-5. 输出语言为中文
-6. 避免出现中国国家领导人的名字
+      systemInstruction: `你是一个新闻摘要和筛选引擎。  
+你的任务是从输入的 N 条新闻信息中，挑选出最重要的 10 条，并严格按照以下规则输出：  
 
-
-参考例子：
-示例1：
-title:某国举行关键选举
-content:某国举行在某年某日举行关键选举，有重要人物出席参会，并且投票率投票。投票结果将在几天后公布。
-keywords:[election]
-
-示例2：
-title:某赛事举办
-content:某赛事在某年某日举办，吸引了来自世界各地的运动员参赛。赛事期间，各国运动员展现出高水平的竞技状态，比赛气氛热烈。
-keywords:[Events]
-
-请回答问题：
-title:xxxx
-content:xxxxxxxxx
-keywords: [xxx]
-输出：
-
-要求：
-1 以 json格式输出，格式为 [{"title":"标题1", "content":"内容1", "keywords":["xxx"]}, ...]。
-###`,
+1. 为每条新闻生成一个简洁明了的标题（中文）。  
+2. 提炼新闻内容为简短的摘要（中文）。  
+3. 为每条新闻提炼一个适合 Pexels API 搜索素材的英文关键词（仅 1 个单词）。  
+4. 输出严格为 JSON 数组，格式如下：  
+[
+  {"title":"标题1", "content":"内容1", "keywords":["keyword1"]},
+  {"title":"标题2", "content":"内容2", "keywords":["keyword2"]},
+  ...
+]  
+5. 标题和内容必须为中文，关键词必须为英文。  
+6. 输出必须是合法的 JSON，不能有多余文本。  
+7. 不得出现中国国家领导人的名字。`,
       responseMimeType: "application/json",
       responseJsonSchema: {
         type: "array",
